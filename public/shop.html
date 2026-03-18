@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RetroHub — Game Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08080f;--bg2:#0d0d18;--bg3:#111120;--panel:#14142a;--panel2:#1a1a3a;
+  --bdr:rgba(0,255,200,.1);--bdr2:rgba(0,255,200,.22);
+  --cx:#00ffc8;--cy:#ffe600;--cp:#ff44cc;--cr:#ff4444;--cg:#44ff88;--co:#ff8800;
+  --txt:#a8c4c0;--t2:#4a7a74;--t3:#2a4a46;--white:#e8f8f4;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100dvh;background:var(--bg);color:var(--txt);font-family:'Space Mono',monospace}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,255,200,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,200,.025) 1px,transparent 1px);
+  background-size:32px 32px}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px)}
+
+/* ── TOPBAR ── */
+#topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--bg2);border-bottom:2px solid var(--cx);
+  display:flex;align-items:center;padding:0 20px;height:46px;gap:14px
+}
+.logo-link{text-decoration:none;display:flex;align-items:center;gap:8px;
+  font-family:'Press Start 2P',monospace;font-size:9px;color:var(--cx);letter-spacing:1px}
+.logo-link:hover{color:var(--white)}
+.sep{width:2px;height:18px;background:var(--bdr2)}
+.shop-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--cy);letter-spacing:2px}
+.spacer{flex:1}
+#back-btn{
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--t2);
+  text-decoration:none;border:1px solid var(--bdr2);padding:5px 10px;
+  letter-spacing:1px;transition:all .1s
+}
+#back-btn:hover{border-color:var(--cx);color:var(--cx)}
+
+/* ── MAIN LAYOUT ── */
+#main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:24px 16px}
+
+/* ── SEARCH BAR ── */
+.search-section{margin-bottom:20px}
+.search-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cx);
+  letter-spacing:2px;margin-bottom:10px;display:block}
+.search-row{display:flex;gap:8px;flex-wrap:wrap}
+#search-input{
+  flex:1;min-width:200px;padding:10px 14px;
+  background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:20px;letter-spacing:2px;color:var(--white);
+  outline:none;transition:border-color .15s
+}
+#search-input:focus{border-color:var(--cx);box-shadow:0 0 0 1px var(--cx)}
+#search-input::placeholder{color:var(--t3)}
+#sys-filter{
+  padding:10px 12px;background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:18px;color:var(--white);outline:none;
+  cursor:pointer;min-width:160px
+}
+#sys-filter:focus{border-color:var(--cx)}
+#sys-filter option{background:var(--panel2)}
+#btn-search{
+  padding:10px 18px;background:var(--cx);border:none;cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:7px;color:var(--bg);
+  letter-spacing:1px;white-space:nowrap;position:relative;transition:transform .1s
+}
+#btn-search::after{content:'';position:absolute;bottom:-3px;left:3px;right:-3px;top:3px;background:rgba(0,200,160,.25);z-index:-1}
+#btn-search:active{transform:translate(2px,2px)}
+#btn-search:active::after{bottom:-1px;left:1px;right:-1px;top:1px}
+#btn-search:disabled{opacity:.4;cursor:default}
+
+/* ── STATUS BAR ── */
+#status-bar{
+  font-family:'VT323',monospace;font-size:16px;color:var(--t2);
+  letter-spacing:2px;margin-bottom:14px;min-height:22px
+}
+#status-bar.ok{color:var(--cg)}
+#status-bar.err{color:var(--cr)}
+
+/* ── RESULTS GRID ── */
+#results{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:10px
+}
+
+.game-card{
+  background:var(--panel);border:1px solid var(--bdr);
+  padding:12px;display:flex;flex-direction:column;gap:8px;
+  transition:border-color .1s;position:relative
+}
+.game-card:hover{border-color:var(--bdr2)}
+.game-card.in-library{border-color:rgba(68,255,136,.3)}
+
+.gc-system{
+  font-family:'Press Start 2P',monospace;font-size:5px;letter-spacing:1px;
+  padding:2px 6px;border:1px solid;display:inline-block;align-self:flex-start
+}
+.gc-title{
+  font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;
+  color:var(--white);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+}
+.gc-size{font-family:'VT323',monospace;font-size:13px;color:var(--t3);letter-spacing:1px}
+.gc-ext{font-family:'VT323',monospace;font-size:13px;color:var(--t2);letter-spacing:1px}
+
+.gc-actions{margin-top:auto;display:flex;gap:6px;align-items:center}
+.gc-add{
+  flex:1;padding:8px;background:var(--cg);border:none;cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--bg);
+  letter-spacing:1px;transition:all .1s;position:relative
+}
+.gc-add::after{content:'';position:absolute;bottom:-2px;left:2px;right:-2px;top:2px;background:rgba(68,255,136,.2);z-index:-1}
+.gc-add:active{transform:translate(1px,1px)}
+.gc-add:disabled{opacity:.4;cursor:default;background:var(--t3)}
+.gc-add.loading{background:var(--cy);color:var(--bg);animation:blink .6s step-end infinite}
+.gc-add.done{background:var(--cx);color:var(--bg)}
+.gc-add.error{background:var(--cr);color:#fff}
+
+/* progress bar inside card */
+.gc-progress{height:3px;background:var(--bdr);margin-top:4px;overflow:hidden;display:none}
+.gc-progress.show{display:block}
+.gc-progress-bar{height:100%;width:0%;background:var(--cx);transition:width .2s}
+
+/* ── DOWNLOAD QUEUE (bottom bar) ── */
+#dl-queue{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--bg2);border-top:2px solid var(--cy);
+  padding:10px 20px;display:none;align-items:center;gap:14px
+}
+#dl-queue.show{display:flex}
+.dq-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cy);letter-spacing:1px;white-space:nowrap}
+.dq-name{font-family:'VT323',monospace;font-size:16px;color:var(--white);letter-spacing:1px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dq-bar-wrap{width:200px;flex-shrink:0;height:4px;background:var(--bdr);overflow:hidden}
+.dq-bar{height:100%;width:0%;background:var(--cy);transition:width .15s}
+.dq-pct{font-family:'VT323',monospace;font-size:14px;color:var(--cy);min-width:36px;text-align:right}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;padding:60px 20px;text-align:center
+}
+.empty-ico{font-size:3rem;opacity:.2}
+.empty-txt{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--t3);letter-spacing:2px;line-height:2.2}
+
+/* System colour map */
+.sys-nes     {border-color:#ff5555;color:#ff5555}
+.sys-snes    {border-color:#cc44ff;color:#cc44ff}
+.sys-gb      {border-color:#44ff88;color:#44ff88}
+.sys-gba     {border-color:#ffaa00;color:#ffaa00}
+.sys-n64     {border-color:#ffe600;color:#ffe600}
+.sys-nds     {border-color:#44aaff;color:#44aaff}
+.sys-segaMD  {border-color:#00ffc8;color:#00ffc8}
+.sys-psx     {border-color:#8888ff;color:#8888ff}
+.sys-psp     {border-color:#44aaff;color:#44aaff}
+.sys-arcade  {border-color:#ff8800;color:#ff8800}
+.sys-default {border-color:#4a7a74;color:#4a7a74}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <a class="logo-link" href="/">◀ RETRO HUB</a>
+  <div class="sep"></div>
+  <div class="shop-title">► GAME SHOP</div>
+  <div class="spacer"></div>
+</div>
+
+<div id="main">
+
+  <div class="search-section">
+    <span class="search-label">► SEARCH ARCHIVE.ORG</span>
+    <div class="search-row">
+      <input id="search-input" type="text" placeholder="SEARCH GAME TITLE..." autocomplete="off" spellcheck="false">
+      <select id="sys-filter">
+        <option value="">ALL SYSTEMS</option>
+        <option value="segaMD">SEGA MEGA DRIVE</option>
+        <option value="nes">NINTENDO NES</option>
+        <option value="snes">SUPER NINTENDO</option>
+        <option value="gb">GAME BOY</option>
+        <option value="gba">GAME BOY ADVANCE</option>
+        <option value="n64">NINTENDO 64</option>
+        <option value="nds">NINTENDO DS</option>
+        <option value="psx">PLAYSTATION</option>
+        <option value="psp">PSP</option>
+        <option value="segaMS">SEGA MASTER SYSTEM</option>
+        <option value="segaGG">GAME GEAR</option>
+        <option value="arcade">ARCADE</option>
+      </select>
+      <button id="btn-search">SEARCH</button>
+    </div>
+  </div>
+
+  <div id="status-bar">ENTER A SEARCH TERM TO FIND GAMES</div>
+  <div id="results">
+    <div class="empty-state">
+      <div class="empty-ico">🔍</div>
+      <div class="empty-txt">SEARCH FOR GAMES ABOVE<br>THEY WILL DOWNLOAD DIRECTLY<br>INTO YOUR LIBRARY</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Download progress bar (bottom) -->
+<div id="dl-queue">
+  <div class="dq-label">DOWNLOADING</div>
+  <div class="dq-name" id="dq-name">—</div>
+  <div class="dq-bar-wrap"><div class="dq-bar" id="dq-bar"></div></div>
+  <div class="dq-pct" id="dq-pct">0%</div>
+</div>
+
+<script>
+// ── System config ──────────────────────────────────────────────────────────
+const SYS_INFO = {
+  segaMD: { label:'Sega MD',    ext:['.gen','.md','.smd','.bin'], cls:'sys-segaMD', q:'sega genesis mega drive' },
+  nes:    { label:'NES',        ext:['.nes','.fds'],              cls:'sys-nes',    q:'nintendo nes famicom roms' },
+  snes:   { label:'SNES',       ext:['.smc','.sfc','.fig'],       cls:'sys-snes',   q:'super nintendo snes roms' },
+  gb:     { label:'Game Boy',   ext:['.gb','.gbc'],               cls:'sys-gb',     q:'game boy color roms' },
+  gba:    { label:'GBA',        ext:['.gba'],                     cls:'sys-gba',    q:'game boy advance gba roms' },
+  n64:    { label:'N64',        ext:['.z64','.n64','.v64'],       cls:'sys-n64',    q:'nintendo 64 n64 roms' },
+  nds:    { label:'NDS',        ext:['.nds'],                     cls:'sys-nds',    q:'nintendo ds nds roms' },
+  psx:    { label:'PlayStation',ext:['.pbp','.chd','.cue'],       cls:'sys-psx',    q:'playstation psx roms' },
+  psp:    { label:'PSP',        ext:['.cso','.iso'],              cls:'sys-psp',    q:'playstation portable psp iso cso' },
+  segaMS: { label:'Master Sys', ext:['.sms'],                     cls:'sys-segaMD', q:'sega master system roms' },
+  segaGG: { label:'Game Gear',  ext:['.gg'],                      cls:'sys-segaMD', q:'sega game gear roms' },
+  arcade: { label:'Arcade',     ext:['.zip'],                     cls:'sys-arcade', q:'arcade mame fbneo roms' },
+};
+
+// All supported extensions
+const ALL_EXTS = new Set([
+  '.nes','.fds','.smc','.sfc','.fig','.gb','.gbc','.gba',
+  '.z64','.n64','.v64','.nds','.gen','.md','.smd','.bin',
+  '.sms','.gg','.32x','.pbp','.chd','.cue','.iso','.cso',
+  '.a26','.lnx','.j64','.pce','.ngp','.ws','.wsc','.zip',
+  '.jar','.jad','.col','.vb','.d64','.t64','.adf','.dosz',
+]);
+
+function extToCore(ext) {
+  const map = {
+    '.nes':'nes','.fds':'nes','.smc':'snes','.sfc':'snes','.fig':'snes',
+    '.gb':'gb','.gbc':'gb','.gba':'gba','.z64':'n64','.n64':'n64','.v64':'n64',
+    '.nds':'nds','.gen':'segaMD','.md':'segaMD','.smd':'segaMD','.bin':'segaMD',
+    '.sms':'segaMS','.gg':'segaGG','.32x':'sega32x',
+    '.pbp':'psx','.chd':'psx','.cue':'psx','.iso':'psx','.cso':'psp',
+    '.a26':'atari2600','.lnx':'lynx','.j64':'jaguar','.pce':'pce',
+    '.ngp':'ngp','.ws':'ws','.wsc':'ws','.zip':'arcade',
+    '.jar':'j2me','.jad':'j2me','.col':'coleco','.vb':'vb',
+    '.d64':'vice_x64sc','.t64':'vice_x64sc','.adf':'amiga','.dosz':'dos',
+  };
+  return map[ext] || null;
+}
+
+function sysClass(core) {
+  const map = {
+    nes:'sys-nes',snes:'sys-snes',gb:'sys-gb',gba:'sys-gba',n64:'sys-n64',
+    nds:'sys-nds',segaMD:'sys-segaMD',segaMS:'sys-segaMD',segaGG:'sys-segaMD',
+    psx:'sys-psx',psp:'sys-psp',arcade:'sys-arcade',
+  };
+  return map[core] || 'sys-default';
+}
+
+function fmtSize(bytes) {
+  if (!bytes) return '';
+  if (bytes > 1e9) return (bytes/1e9).toFixed(1)+'GB';
+  if (bytes > 1e6) return (bytes/1e6).toFixed(1)+'MB';
+  return (bytes/1e3).toFixed(0)+'KB';
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+let libraryFiles = new Set();
+let downloadQueue = [];
+let downloading = false;
+
+// Fetch current library to show which games are already added
+async function refreshLibrary() {
+  try {
+    const r = await fetch('/api/games');
+    const games = await r.json();
+    libraryFiles = new Set(games.map(g => g.filename));
+    // Update any visible cards
+    document.querySelectorAll('.game-card').forEach(card => {
+      const fn = card.dataset.filename;
+      if (fn && libraryFiles.has(fn)) markAdded(card);
+    });
+  } catch(e) {}
+}
+refreshLibrary();
+
+// ── Search ─────────────────────────────────────────────────────────────────
+const elInput  = document.getElementById('search-input');
+const elFilter = document.getElementById('sys-filter');
+const elBtn    = document.getElementById('btn-search');
+const elStatus = document.getElementById('status-bar');
+const elResults= document.getElementById('results');
+
+async function doSearch() {
+  const query  = elInput.value.trim();
+  const system = elFilter.value;
+  if (!query && !system) {
+    elStatus.textContent = 'ENTER A SEARCH TERM';
+    elStatus.className = 'err';
+    return;
+  }
+
+  elBtn.disabled = true;
+  elStatus.textContent = 'SEARCHING ARCHIVE.ORG...';
+  elStatus.className = '';
+  elResults.innerHTML = '';
+
+  try {
+    const params = new URLSearchParams({ q: query, system });
+    const r = await fetch('/api/shop/search?' + params);
+    const data = await r.json();
+
+    if (!data.results || data.results.length === 0) {
+      elStatus.textContent = 'NO RESULTS FOUND — TRY DIFFERENT KEYWORDS';
+      elStatus.className = 'err';
+      elResults.innerHTML = '<div class="empty-state"><div class="empty-ico">🕹</div><div class="empty-txt">NO GAMES FOUND<br>TRY BROADER SEARCH</div></div>';
+      return;
+    }
+
+    elStatus.textContent = `FOUND ${data.results.length} FILE${data.results.length!==1?'S':''}`;
+    elStatus.className = 'ok';
+    renderResults(data.results);
+  } catch(e) {
+    elStatus.textContent = 'SEARCH ERROR — ' + e.message.toUpperCase();
+    elStatus.className = 'err';
+  } finally {
+    elBtn.disabled = false;
+  }
+}
+
+function renderResults(results) {
+  elResults.innerHTML = '';
+  results.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'game-card' + (libraryFiles.has(item.filename) ? ' in-library' : '');
+    card.dataset.filename = item.filename;
+    card.dataset.identifier = item.identifier;
+
+    const core = extToCore(item.ext);
+    const cls  = sysClass(core);
+    const sysLabel = Object.values(SYS_INFO).find(s => s.ext.includes(item.ext))?.label || item.ext.toUpperCase().replace('.','');
+
+    const isAdded = libraryFiles.has(item.filename);
+
+    card.innerHTML = `
+      <span class="gc-system ${cls}">${sysLabel}</span>
+      <div class="gc-title">${escHtml(item.title)}</div>
+      <div>
+        <span class="gc-ext">${item.ext.toUpperCase()}</span>
+        ${item.size ? `<span class="gc-size"> · ${fmtSize(item.size)}</span>` : ''}
+      </div>
+      <div class="gc-actions">
+        <button class="gc-add ${isAdded?'done':''}" ${isAdded?'disabled':''}>
+          ${isAdded ? '✓ IN LIBRARY' : '+ ADD TO LIBRARY'}
+        </button>
+      </div>
+      <div class="gc-progress"><div class="gc-progress-bar"></div></div>
+    `;
+
+    const btn = card.querySelector('.gc-add');
+    if (!isAdded) {
+      btn.addEventListener('click', () => queueDownload(item, card));
+    }
+
+    elResults.appendChild(card);
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Download queue ─────────────────────────────────────────────────────────
+function queueDownload(item, card) {
+  downloadQueue.push({ item, card });
+  const btn = card.querySelector('.gc-add');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = 'QUEUED...';
+  if (!downloading) processQueue();
+}
+
+async function processQueue() {
+  if (downloadQueue.length === 0) {
+    downloading = false;
+    document.getElementById('dl-queue').classList.remove('show');
+    return;
+  }
+  downloading = true;
+  const { item, card } = downloadQueue.shift();
+  await downloadGame(item, card);
+  processQueue();
+}
+
+async function downloadGame(item, card) {
+  const btn      = card.querySelector('.gc-add');
+  const progWrap = card.querySelector('.gc-progress');
+  const progBar  = card.querySelector('.gc-progress-bar');
+  const dlQueue  = document.getElementById('dl-queue');
+  const dqName   = document.getElementById('dq-name');
+  const dqBar    = document.getElementById('dq-bar');
+  const dqPct    = document.getElementById('dq-pct');
+
+  btn.classList.remove('loading');
+  btn.classList.add('loading');
+  btn.textContent = 'DOWNLOADING...';
+  progWrap.classList.add('show');
+  dlQueue.classList.add('show');
+  dqName.textContent = item.title.toUpperCase();
+
+  const updateProgress = (pct) => {
+    progBar.style.width = pct + '%';
+    dqBar.style.width = pct + '%';
+    dqPct.textContent = Math.round(pct) + '%';
+  };
+
+  try {
+    const r = await fetch('/api/shop/download', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ identifier: item.identifier, filename: item.filename }),
+    });
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ error: 'Download failed' }));
+      throw new Error(err.error || 'Download failed');
+    }
+
+    // Stream progress from response body (server sends JSON lines)
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const msg = JSON.parse(line);
+          if (msg.progress !== undefined) updateProgress(msg.progress);
+          if (msg.done) {
+            updateProgress(100);
+            markAdded(card);
+            libraryFiles.add(item.filename);
+            elStatus.textContent = `✓ ${item.title.toUpperCase()} ADDED TO LIBRARY`;
+            elStatus.className = 'ok';
+          }
+          if (msg.error) throw new Error(msg.error);
+        } catch(e) { if (e.message !== 'JSON') throw e; }
+      }
+    }
+  } catch(e) {
+    btn.classList.remove('loading');
+    btn.classList.add('error');
+    btn.textContent = '✕ FAILED';
+    btn.disabled = false;
+    progWrap.classList.remove('show');
+    elStatus.textContent = 'DOWNLOAD FAILED: ' + e.message.toUpperCase();
+    elStatus.className = 'err';
+    // Re-enable after 3s
+    setTimeout(() => {
+      btn.classList.remove('error');
+      btn.textContent = '+ ADD TO LIBRARY';
+      btn.disabled = false;
+    }, 3000);
+  }
+}
+
+function markAdded(card) {
+  const btn = card.querySelector('.gc-add');
+  const prog = card.querySelector('.gc-progress');
+  btn.classList.remove('loading','error');
+  btn.classList.add('done');
+  btn.textContent = '✓ IN LIBRARY';
+  btn.disabled = true;
+  card.classList.add('in-library');
+  if (prog) prog.classList.remove('show');
+}
+
+// ── Events ─────────────────────────────────────────────────────────────────
+elBtn.addEventListener('click', doSearch);
+elInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+</script>
+</body>
+</html>
