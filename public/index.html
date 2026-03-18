@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RetroHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #08080f;
+  --bg2:   #0d0d18;
+  --bg3:   #111120;
+  --panel: #14142a;
+  --bdr:   rgba(0,255,200,.1);
+  --bdr2:  rgba(0,255,200,.22);
+  --cx:    #00ffc8;
+  --cy:    #ffe600;
+  --cp:    #ff44cc;
+  --cr:    #ff4444;
+  --cg:    #44ff88;
+  --txt:   #a8c4c0;
+  --txt2:  #5a7a76;
+  --txt3:  #2a4a46;
+  --white: #e8f8f4;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100dvh; overflow: hidden;
+  background: var(--bg); color: var(--txt);
+  font-family: 'Space Mono', monospace;
+  user-select: none;
+  image-rendering: pixelated;
+}
+
+/* ── Pixel grid background ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,255,200,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,200,.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ── Scanline overlay ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,.06) 3px, rgba(0,0,0,.06) 4px
+  );
+}
+
+/* ── FULLSCREEN PROMPT OVERLAY ── */
+#fs-prompt {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 32px; cursor: pointer;
+  transition: opacity .4s;
+}
+#fs-prompt.gone { opacity: 0; pointer-events: none; }
+
+.fsp-logo {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(16px, 3vw, 28px);
+  color: var(--cx);
+  text-shadow: 0 0 30px rgba(0,255,200,.5), 0 0 60px rgba(0,255,200,.2);
+  letter-spacing: 4px;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+@keyframes glow-pulse { 0%,100%{text-shadow:0 0 20px rgba(0,255,200,.4)} 50%{text-shadow:0 0 40px rgba(0,255,200,.8),0 0 80px rgba(0,255,200,.3)} }
+
+.fsp-tagline {
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: var(--txt2);
+  letter-spacing: 3px;
+}
+
+.fsp-press {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(8px, 1.5vw, 12px);
+  color: var(--cy);
+  letter-spacing: 3px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.fsp-code-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  border: 2px solid var(--bdr2); padding: 20px 40px;
+  background: var(--panel);
+}
+.fsp-code-lbl {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px; color: var(--txt3); letter-spacing: 2px;
+}
+.fsp-code {
+  font-family: 'VT323', monospace;
+  font-size: 52px; color: var(--white); letter-spacing: 12px;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+.fsp-url {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; color: var(--txt2);
+}
+.fsp-url b { color: var(--cx); }
+
+/* ── MAIN SHELL ── */
+#shell { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100dvh; }
+
+/* ── TOP BAR ── */
+#topbar {
+  height: 44px; flex-shrink: 0;
+  background: var(--bg2);
+  border-bottom: 2px solid var(--cx);
+  display: flex; align-items: center; padding: 0 16px; gap: 12px;
+  position: relative; z-index: 10;
+}
+/* pixel corner accent */
+#topbar::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,255,200,.15), transparent);
+}
+
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px; color: var(--cx); letter-spacing: 1px;
+}
+.logo-px {
+  width: 24px; height: 24px;
+  background: var(--cx);
+  display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr);
+  gap: 1px; padding: 3px;
+}
+.logo-px span { background: var(--bg2); }
+.logo-px span:nth-child(2),.logo-px span:nth-child(5),.logo-px span:nth-child(8),
+.logo-px span:nth-child(9),.logo-px span:nth-child(12),.logo-px span:nth-child(15) { background: transparent; }
+
+.sep { width: 2px; height: 20px; background: var(--bdr2); }
+.spacer { flex: 1; }
+
+.pdots { display: flex; gap: 4px; align-items: center; }
+.pdot {
+  width: 10px; height: 10px; background: var(--panel);
+  border: 1px solid var(--bdr2); transition: all .2s;
+  /* pixel shape - no border radius */
+}
+.pdot.on { background: var(--cg); border-color: var(--cg); box-shadow: 0 0 8px var(--cg); }
+
+.room-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--panel); border: 1px solid var(--bdr2);
+  padding: 4px 10px;
+}
+.room-lbl {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px; color: var(--txt3); letter-spacing: 1px;
+}
+.room-val {
+  font-family: 'VT323', monospace;
+  font-size: 20px; letter-spacing: 5px; color: var(--white);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+.room-val.still { animation: none; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── MAIN AREA ── */
+#main { flex: 1; display: flex; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: 210px; flex-shrink: 0;
+  background: var(--bg2); border-right: 2px solid var(--bdr);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sb-head {
+  padding: 12px 14px 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px; color: var(--cx); letter-spacing: 2px;
+  border-bottom: 1px solid var(--bdr);
+}
+#game-list { flex: 1; overflow-y: auto; padding: 4px; }
+#game-list::-webkit-scrollbar { width: 4px; }
+#game-list::-webkit-scrollbar-thumb { background: var(--bdr2); }
+#game-list::-webkit-scrollbar-track { background: transparent; }
+
+.grow {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 8px; cursor: pointer;
+  border: 1px solid transparent; margin-bottom: 2px;
+  transition: background .08s;
+}
+.grow:hover { background: rgba(0,255,200,.04); border-color: var(--bdr); }
+.grow.sel { background: rgba(0,255,200,.08); border-color: var(--cx); }
+.grow.sel::before { content: '▶'; font-size: 8px; color: var(--cx); flex-shrink: 0; }
+.grow-icon {
+  width: 28px; height: 28px; flex-shrink: 0; background: var(--panel);
+  border: 1px solid var(--bdr); display: flex; align-items: center; justify-content: center;
+  font-size: .9rem;
+}
+.grow-info { min-width: 0; flex: 1; }
+.grow-name {
+  font-family: 'Space Mono', monospace;
+  font-size: .68rem; font-weight: 700; color: var(--txt);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.grow.sel .grow-name { color: var(--white); }
+.grow-sys {
+  font-family: 'VT323', monospace;
+  font-size: 13px; color: var(--txt3); margin-top: 1px; letter-spacing: 1px;
+}
+.sb-foot {
+  padding: 8px 12px; border-top: 1px solid var(--bdr);
+  font-family: 'VT323', monospace; font-size: 14px; color: var(--txt3);
+}
+.sb-foot b { color: var(--txt2); }
+
+/* ── DETAIL PANEL ── */
+#detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+
+#hero { height: 200px; flex-shrink: 0; position: relative; overflow: hidden; background: var(--bg3); }
+#hero-svg { position: absolute; inset: 0; }
+#hero-svg svg { width: 100%; height: 100%; }
+#hero::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 20%, rgba(8,8,15,.98) 100%);
+  pointer-events: none;
+}
+#hero-bottom { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 20px; z-index: 2; }
+#hero-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(9px, 1.8vw, 15px);
+  color: var(--white); line-height: 1.6; margin-bottom: 8px;
+  text-shadow: 0 2px 12px rgba(0,0,0,.9);
+}
+.hero-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag {
+  padding: 2px 7px; font-family: 'Press Start 2P', monospace;
+  font-size: 6px; letter-spacing: 1px;
+}
+.tag-core { background: rgba(0,255,200,.1); border: 1px solid var(--cx); color: var(--cx); }
+.tag-sys  { background: rgba(255,255,255,.04); border: 1px solid var(--bdr2); color: var(--txt2); }
+
+#detail-body { flex: 1; display: flex; overflow: hidden; }
+#detail-info { flex: 1; overflow-y: auto; padding: 16px 20px; }
+#detail-info::-webkit-scrollbar { width: 3px; }
+
+.info-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; gap: 12px; color: var(--txt3);
+}
+.info-empty .ico { font-size: 2.5rem; opacity: .25; }
+.info-empty p {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px; text-align: center; line-height: 2.2; color: var(--txt3);
+}
+
+.info-grid {
+  display: grid; grid-template-columns: 90px 1fr;
+  gap: 1px; background: var(--bdr); overflow: hidden;
+}
+.info-grid dt, .info-grid dd { padding: 9px 12px; background: var(--panel); font-size: .72rem; }
+.info-grid dt {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px; color: var(--txt3); letter-spacing: 1px;
+}
+.info-grid dd { color: var(--white); font-weight: 700; font-family: 'Space Mono', monospace; font-size: .7rem; }
+
+/* ── PLAY PANEL ── */
+#play-panel {
+  width: 180px; flex-shrink: 0; padding: 16px 12px;
+  border-left: 2px solid var(--bdr); background: var(--bg2);
+  display: flex; flex-direction: column; gap: 10px;
+}
+#btn-play {
+  width: 100%; padding: 12px 8px;
+  background: var(--cg); border: none; cursor: pointer;
+  font-family: 'Press Start 2P', monospace; font-size: 8px;
+  color: var(--bg); letter-spacing: 1px;
+  transition: all .1s; position: relative;
+}
+#btn-play::after {
+  content: ''; position: absolute;
+  bottom: -3px; left: 3px; right: -3px; top: 3px;
+  background: rgba(68,255,136,.25); z-index: -1;
+}
+#btn-play:hover:not(:disabled) { transform: translate(-1px, -1px); }
+#btn-play:active:not(:disabled) { transform: translate(1px, 1px); }
+#btn-play:active:not(:disabled)::after { bottom: -1px; left: 1px; right: -1px; top: 1px; }
+#btn-play:disabled { opacity: .3; cursor: default; }
+#btn-play:disabled::after { display: none; }
+
+.pp-lbl {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px; color: var(--txt3); letter-spacing: 1px;
+}
+.pp-val { font-family: 'VT323', monospace; font-size: 16px; color: var(--txt); margin-top: 2px; }
+.pp-div { height: 1px; background: var(--bdr); }
+.pp-hint { font-family: 'VT323', monospace; font-size: 14px; color: var(--txt3); line-height: 1.5; }
+.pp-hint b { color: var(--cy); }
+
+/* ── WAIT OVERLAY ── */
+#wait {
+  position: fixed; inset: 0; z-index: 100; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  transition: opacity .5s;
+}
+#wait.gone { opacity: 0; pointer-events: none; }
+.wait-logo {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px; color: var(--cx); letter-spacing: 3px;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+.wait-code-box {
+  background: var(--panel); border: 2px solid var(--cx);
+  padding: 20px 36px; text-align: center;
+}
+.wait-code-lbl {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px; color: var(--txt3); letter-spacing: 2px; margin-bottom: 10px;
+}
+.wait-code {
+  font-family: 'VT323', monospace;
+  font-size: 58px; letter-spacing: 14px; color: var(--white);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+.wait-sub {
+  font-family: 'VT323', monospace;
+  font-size: 18px; color: var(--txt2); letter-spacing: 2px;
+}
+.wait-url {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; color: var(--txt3);
+}
+.wait-url b { color: var(--cx); }
+
+/* ── GAME VIEW ── */
+#gview {
+  position: fixed; inset: 0; z-index: 50; background: #000;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+  height: 100dvh;
+}
+#gview.vis { opacity: 1; pointer-events: all; }
+
+#gbar {
+  height: 36px; flex-shrink: 0;
+  background: var(--bg2); border-bottom: 2px solid var(--cx);
+  display: flex; align-items: center; padding: 0 12px; gap: 8px;
+}
+#gbar-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px; color: var(--white); letter-spacing: 1px;
+}
+.live-dot {
+  width: 6px; height: 6px; background: var(--cg);
+  box-shadow: 0 0 6px var(--cg); animation: ldot 1.8s ease-in-out infinite;
+}
+@keyframes ldot { 0%,100%{opacity:1} 50%{opacity:.2} }
+#gbar .spacer { flex: 1; }
+.gbar-btn {
+  padding: 3px 10px; border: 1px solid var(--bdr2);
+  background: var(--panel); cursor: pointer;
+  font-family: 'Press Start 2P', monospace; font-size: 6px;
+  color: var(--txt2); letter-spacing: 1px; transition: all .1s;
+}
+.gbar-btn:hover { border-color: var(--cx); color: var(--cx); }
+#btn-exit:hover { border-color: var(--cr); color: var(--cr); }
+
+.emu-slot { flex: 1; position: relative; overflow: hidden; }
+#frame1 { position: absolute; inset: 0; width: 100%; height: 100%; border: none; opacity: 0; transition: opacity .5s .1s; }
+#frame1.ready { opacity: 1; }
+#boot-cover {
+  position: absolute; inset: 0; z-index: 5; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  transition: opacity .5s;
+}
+#boot-cover.gone { opacity: 0; pointer-events: none; }
+.boot-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--bdr2); border-top-color: var(--cx);
+  /* square spinner — pixel style */
+  animation: spin .7s steps(8) infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.boot-txt {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px; color: var(--txt2); letter-spacing: 1px;
+  animation: blink 1s step-end infinite;
+}
+
+/* ── TOASTS ── */
+#toasts {
+  position: fixed; bottom: 16px; right: 16px; z-index: 9999;
+  display: flex; flex-direction: column-reverse; gap: 6px; pointer-events: none;
+}
+.toast {
+  background: var(--panel); border: 1px solid var(--bdr2);
+  padding: 7px 12px;
+  font-family: 'VT323', monospace; font-size: 15px; color: var(--txt);
+  display: flex; align-items: center; gap: 8px;
+  animation: tup .15s ease forwards, tdn .2s ease 3s forwards;
+  transform: translateY(8px); opacity: 0;
+}
+.toast .dot { width: 5px; height: 5px; background: var(--cx); flex-shrink: 0; }
+.toast.warn .dot { background: var(--cr); }
+@keyframes tup { to { transform: translateY(0); opacity: 1; } }
+@keyframes tdn { to { transform: translateY(-4px); opacity: 0; } }
+</style>
+</head>
+<body>
+
+<!-- ── FULLSCREEN PROMPT (AirConsole style) ── -->
+<div id="fs-prompt">
+  <div class="fsp-logo">RETRO HUB</div>
+  <div class="fsp-tagline">MULTIPLAYER RETRO GAMING</div>
+  <div class="fsp-code-wrap">
+    <div class="fsp-code-lbl">ROOM CODE</div>
+    <div class="fsp-code" id="fsp-code">----</div>
+    <div class="fsp-url">Phone: <b id="fsp-url">...</b>/remote.html</div>
+  </div>
+  <div class="fsp-press">▶ &nbsp;CLICK ANYWHERE TO START &nbsp;◀</div>
+</div>
+
+<!-- ── WAITING FOR CONTROLLER ── -->
+<div id="wait">
+  <div class="wait-logo">RETRO HUB</div>
+  <div class="wait-sub">OPEN CONTROLLER ON YOUR PHONE</div>
+  <div class="wait-code-box">
+    <div class="wait-code-lbl">ROOM CODE</div>
+    <div class="wait-code" id="wcode">----</div>
+  </div>
+  <div class="wait-url">Go to: <b id="wait-url-txt">YOUR-IP:3000</b>/remote.html</div>
+  <div class="wait-sub" style="color:var(--txt3)">WAITING FOR PLAYER 1...</div>
+</div>
+
+<!-- ── MAIN SHELL ── -->
+<div id="shell">
+  <div id="topbar">
+    <div class="logo">
+      <div class="logo-px">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+      </div>
+      RETRO HUB
+    </div>
+    <div class="sep"></div>
+    <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--txt3);letter-spacing:1px">LIBRARY</span>
+    <div class="spacer"></div>
+    <div class="pdots">
+      <span style="font-family:'VT323',monospace;font-size:13px;color:var(--txt3);letter-spacing:1px">P1</span>
+      <div class="pdot" id="d1"></div>
+      <span style="font-family:'VT323',monospace;font-size:13px;color:var(--txt3);letter-spacing:1px;margin-left:6px">P2</span>
+      <div class="pdot" id="d2"></div>
+    </div>
+    <div class="room-pill">
+      <span class="room-lbl">ROOM</span>
+      <span class="room-val" id="rcd">----</span>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="sidebar">
+      <div class="sb-head">► LIBRARY</div>
+      <div id="game-list"></div>
+      <div class="sb-foot" id="sbfoot">SCANNING...</div>
+    </div>
+    <div id="detail">
+      <div id="hero">
+        <div id="hero-svg"></div>
+        <div id="hero-bottom">
+          <div id="hero-title">SELECT A GAME</div>
+          <div class="hero-tags" id="hero-tags"></div>
+        </div>
+      </div>
+      <div id="detail-body">
+        <div id="detail-info">
+          <div class="info-empty" id="info-empty">
+            <div class="ico">🎮</div>
+            <p>PICK A GAME<br>FROM THE LIST</p>
+          </div>
+          <dl class="info-grid" id="info-grid" style="display:none">
+            <dt>TITLE</dt>  <dd id="i-title"></dd>
+            <dt>SYSTEM</dt> <dd id="i-system"></dd>
+            <dt>CORE</dt>   <dd id="i-core"></dd>
+            <dt>FILE</dt>   <dd id="i-file"></dd>
+          </dl>
+        </div>
+        <div id="play-panel">
+          <button id="btn-play" disabled>▶ PLAY</button>
+          <div class="pp-hint" id="pp-hint">SELECT A GAME FIRST</div>
+          <div class="pp-div"></div>
+          <div><div class="pp-lbl">CONTROLLERS</div><div class="pp-val" id="pp-ctrl">NONE</div></div>
+          <div><div class="pp-lbl">STATUS</div><div class="pp-val" id="pp-status">READY</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GAME VIEW ── -->
+<div id="gview">
+  <div id="gbar">
+    <div id="gbar-title">—</div>
+    <div class="live-dot"></div>
+    <div class="spacer"></div>
+    <button class="gbar-btn" id="btn-fs">[ ]</button>
+    <button class="gbar-btn" id="btn-exit">✕ EXIT</button>
+  </div>
+  <div class="emu-slot">
+    <div id="boot-cover">
+      <div class="boot-spinner"></div>
+      <div class="boot-txt" id="boot-txt">LOADING...</div>
+    </div>
+    <iframe id="frame1" allowfullscreen allow="autoplay; gamepad"></iframe>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// ── System palette ─────────────────────────────────────────────────────────
+const SYS = {
+  segaMD:   { c:'#0a1a0e', a:'#00ffc8', label:'Sega Mega Drive',    icon:'🎮' },
+  segaMS:   { c:'#0a1a0e', a:'#00ffc8', label:'Sega Master System', icon:'🎯' },
+  segaGG:   { c:'#0a1a0e', a:'#00ffc8', label:'Game Gear',          icon:'🎯' },
+  sega32x:  { c:'#1a0a08', a:'#ff4444', label:'Sega 32X',           icon:'🔴' },
+  nes:      { c:'#180808', a:'#ff4444', label:'Nintendo NES',       icon:'🕹' },
+  snes:     { c:'#12081a', a:'#cc44ff', label:'Super Nintendo',     icon:'🎲' },
+  gb:       { c:'#081a08', a:'#44ff88', label:'Game Boy',           icon:'🟩' },
+  gba:      { c:'#1a1008', a:'#ffaa00', label:'Game Boy Advance',   icon:'🎯' },
+  n64:      { c:'#1a1808', a:'#ffe600', label:'Nintendo 64',        icon:'🟡' },
+  nds:      { c:'#08121a', a:'#44aaff', label:'Nintendo DS',        icon:'📱' },
+  psx:      { c:'#100a1a', a:'#8888ff', label:'PlayStation',        icon:'🎮' },
+  psp:      { c:'#081018', a:'#44aaff', label:'PSP',                icon:'📺' },
+  arcade:   { c:'#1a0808', a:'#ff6600', label:'Arcade',             icon:'🕹' },
+  j2me:     { c:'#140a1a', a:'#cc44ff', label:'J2ME Mobile',        icon:'📱' },
+};
+const DEF = { c:'#0a1218', a:'#00ffc8', label:'Unknown', icon:'🎮' };
+
+function heroSVG(name, core) {
+  const s = SYS[core] || DEF;
+  const init = name.replace(/[^a-zA-Z0-9]/g,' ').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase() || '??';
+  // pixel-art style hero — blocky grid pattern
+  return `<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="800" height="200" fill="${s.c}"/>
+    <pattern id="pg" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="none"/>
+      <rect x="0" y="0" width="1" height="1" fill="${s.a}" opacity=".06"/>
+    </pattern>
+    <rect width="800" height="200" fill="url(#pg)"/>
+    <text x="20" y="165" font-family="monospace" font-weight="900" font-size="140" fill="${s.a}" opacity=".07" letter-spacing="-2">${init}</text>
+    <rect x="680" y="20" width="6" height="6" fill="${s.a}" opacity=".5"/>
+    <rect x="692" y="20" width="6" height="6" fill="${s.a}" opacity=".3"/>
+    <rect x="704" y="20" width="6" height="6" fill="${s.a}" opacity=".15"/>
+    <rect x="680" y="32" width="6" height="6" fill="${s.a}" opacity=".3"/>
+    <rect x="692" y="32" width="6" height="6" fill="${s.a}" opacity=".5"/>
+    <rect x="704" y="32" width="6" height="6" fill="${s.a}" opacity=".3"/>
+    <rect x="680" y="44" width="6" height="6" fill="${s.a}" opacity=".15"/>
+    <rect x="692" y="44" width="6" height="6" fill="${s.a}" opacity=".3"/>
+    <rect x="704" y="44" width="6" height="6" fill="${s.a}" opacity=".5"/>
+  </svg>`;
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+let games = [], sel = -1, gameActive = false, p1on = false, p2on = false;
+
+const elList    = document.getElementById('game-list');
+const elSbfoot  = document.getElementById('sbfoot');
+const elWait    = document.getElementById('wait');
+const elWcode   = document.getElementById('wcode');
+const elRcd     = document.getElementById('rcd');
+const elFspCode = document.getElementById('fsp-code');
+const elHeroSvg = document.getElementById('hero-svg');
+const elHTitle  = document.getElementById('hero-title');
+const elHTags   = document.getElementById('hero-tags');
+const elEmpty   = document.getElementById('info-empty');
+const elGrid    = document.getElementById('info-grid');
+const elBtnPlay = document.getElementById('btn-play');
+const elPpHint  = document.getElementById('pp-hint');
+const elPpCtrl  = document.getElementById('pp-ctrl');
+const elPpStat  = document.getElementById('pp-status');
+const elGview   = document.getElementById('gview');
+const elGBarT   = document.getElementById('gbar-title');
+const elFrame1  = document.getElementById('frame1');
+const elBoot    = document.getElementById('boot-cover');
+const elBootTxt = document.getElementById('boot-txt');
+const d1 = document.getElementById('d1');
+const d2 = document.getElementById('d2');
+
+// ── Fullscreen prompt ──────────────────────────────────────────────────────
+const elFsPrompt = document.getElementById('fs-prompt');
+let fsPromptDismissed = false;
+
+function dismissFsPrompt() {
+  if (fsPromptDismissed) return;
+  fsPromptDismissed = true;
+  enterFullscreen();
+  elFsPrompt.classList.add('gone');
+}
+elFsPrompt.addEventListener('click', dismissFsPrompt);
+// Also auto-dismiss when P1 connects
+function autoFsOnController() {
+  if (!fsPromptDismissed) dismissFsPrompt();
+}
+
+// ── Fullscreen helpers ─────────────────────────────────────────────────────
+function enterFullscreen() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+  if (req) req.call(el).catch(() => {});
+}
+function exitFullscreenMode() {
+  const ex = document.exitFullscreen || document.webkitExitFullscreen;
+  if (ex) ex.call(document).catch(() => {});
+}
+function isFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+document.getElementById('btn-fs').addEventListener('click', () => {
+  if (isFullscreen()) exitFullscreenMode(); else enterFullscreen();
+});
+document.getElementById('btn-exit').addEventListener('click', () => {
+  if (gameActive) { stopGame(); socket.emit('game:stop'); toast('RETURNED TO LIBRARY'); }
+});
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, warn=false) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (warn ? ' warn' : '');
+  el.innerHTML = `<div class="dot"></div>${msg}`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3600);
+}
+
+// ── Library ────────────────────────────────────────────────────────────────
+function buildList() {
+  elList.innerHTML = '';
+  if (!games.length) { elSbfoot.textContent = 'NO ROMS FOUND'; return; }
+  games.forEach((g, i) => {
+    const s = SYS[g.core] || DEF;
+    const row = document.createElement('div');
+    row.className = 'grow' + (i === sel ? ' sel' : '');
+    row.innerHTML = `<div class="grow-icon">${s.icon}</div>
+      <div class="grow-info">
+        <div class="grow-name">${g.name}</div>
+        <div class="grow-sys">${g.system || g.core}</div>
+      </div>`;
+    row.addEventListener('click', () => selectGame(i));
+    elList.appendChild(row);
+  });
+  elSbfoot.innerHTML = `<b>${games.length}</b> GAMES`;
+}
+
+function selectGame(i) {
+  sel = Math.max(0, Math.min(i, games.length - 1));
+  elList.querySelectorAll('.grow').forEach((r, j) => r.classList.toggle('sel', j === sel));
+  elList.querySelectorAll('.grow')[sel]?.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  const g = games[sel];
+  elHeroSvg.innerHTML = heroSVG(g.name, g.core);
+  elHTitle.textContent = g.name.toUpperCase();
+  elHTags.innerHTML = `<span class="tag tag-core">${g.core}</span><span class="tag tag-sys">${g.system}</span>`;
+  document.getElementById('i-title').textContent  = g.name;
+  document.getElementById('i-system').textContent = g.system;
+  document.getElementById('i-core').textContent   = g.core;
+  document.getElementById('i-file').textContent   = g.filename;
+  elGrid.style.display = '';
+  elEmpty.style.display = 'none';
+  elBtnPlay.disabled = false;
+  elPpHint.innerHTML = 'PRESS <b>START</b> ON P1';
+  socket.emit('hub:selection', { game: g });
+}
+
+function navigate(dir) {
+  if (gameActive || !games.length) return;
+  selectGame(sel < 0 ? 0 : sel + dir);
+}
+
+// ── Game URL ───────────────────────────────────────────────────────────────
+function gameURL(g) {
+  const s = SYS[g.core] || DEF;
+  return `/game.html?core=${encodeURIComponent(g.core)}&rom=${encodeURIComponent('/games/'+g.filename)}&name=${encodeURIComponent(g.name)}&color=${encodeURIComponent(s.a)}&data=${encodeURIComponent('https://cdn.emulatorjs.org/stable/data/')}`;
+}
+
+// ── Boot cover ─────────────────────────────────────────────────────────────
+let _bootTimer;
+function dismissBoot() {
+  clearTimeout(_bootTimer);
+  elFrame1.classList.add('ready');
+  setTimeout(() => elBoot.classList.add('gone'), 150);
+}
+window.addEventListener('message', e => { if (e.data?.type === 'ejs_started') dismissBoot(); });
+
+// ── Launch / stop ──────────────────────────────────────────────────────────
+function launchGame(g) {
+  elGBarT.textContent = g.name.toUpperCase();
+  elBootTxt.textContent = 'LOADING ' + g.name.toUpperCase().slice(0,20) + '...';
+  elFrame1.classList.remove('ready');
+  elBoot.classList.remove('gone');
+  elGview.classList.add('vis');
+  gameActive = true;
+  elPpStat.textContent = 'PLAYING';
+  elFrame1.src = gameURL(g);
+  _bootTimer = setTimeout(dismissBoot, 35000);
+}
+function launchGameFS(g) { launchGame(g); enterFullscreen(); }
+function stopGame() {
+  gameActive = false;
+  elGview.classList.remove('vis');
+  elFrame1.src = 'about:blank';
+  elPpStat.textContent = 'READY';
+}
+
+// ── Key injection ──────────────────────────────────────────────────────────
+const KC = { ArrowUp:38,ArrowDown:40,ArrowLeft:37,ArrowRight:39,Enter:13,Escape:27,Shift:16,Tab:9,' ':32,q:81,e:69,r:82,w:87,a:65,s:83,d:68,v:86,x:88,z:90 };
+function injectP1(type, key, code) {
+  try {
+    const kc = KC[key] || 0;
+    const ev = new KeyboardEvent(type, { key, code, bubbles:true, cancelable:true, keyCode:kc, which:kc });
+    const doc = elFrame1.contentDocument || elFrame1.contentWindow?.document;
+    const target = doc?.querySelector('canvas') || doc?.body;
+    if (target) target.dispatchEvent(ev);
+    elFrame1.contentWindow?.dispatchEvent(ev);
+  } catch(_) {}
+}
+function injectP2(action, key) {
+  try { elFrame1.contentWindow?.EJS_p2input?.(action, key); } catch(_) {}
+}
+
+elBtnPlay.addEventListener('click', () => {
+  if (!gameActive && sel >= 0 && games[sel]) launchGameFS(games[sel]);
+});
+
+// ── Socket ─────────────────────────────────────────────────────────────────
+const socket = io();
+
+socket.on('connect', () => {
+  socket.emit('screen:register');
+  elPpStat.textContent = 'CONNECTING';
+});
+
+socket.on('screen:registered', ({ roomCode }) => {
+  elRcd.textContent      = roomCode;
+  elWcode.textContent    = roomCode;
+  elFspCode.textContent  = roomCode;
+  elPpStat.textContent   = 'READY';
+  // Show IP in prompts
+  const ip = location.hostname;
+  const port = location.port ? ':' + location.port : '';
+  const urlEl = document.getElementById('fsp-url');
+  const waitUrlEl = document.getElementById('wait-url-txt');
+  if (urlEl) urlEl.textContent = ip + port;
+  if (waitUrlEl) waitUrlEl.textContent = ip + port;
+  fetch('/api/games').then(r => r.json()).then(data => {
+    games = data;
+    buildList();
+    if (games.length) selectGame(0);
+  });
+});
+
+socket.on('controller:connected', ({ playerId }) => {
+  if (playerId === 1) {
+    p1on = true; d1.classList.add('on');
+    elWait.classList.add('gone');
+    elRcd.classList.add('still');
+    autoFsOnController();
+  }
+  if (playerId === 2) { p2on = true; d2.classList.add('on'); }
+  elPpCtrl.textContent = p1on && p2on ? 'P1 + P2' : p1on ? 'P1' : 'P2';
+  toast(`PLAYER ${playerId} CONNECTED`);
+});
+
+socket.on('controller:disconnected', ({ playerId }) => {
+  if (playerId === 1) { p1on = false; d1.classList.remove('on'); }
+  if (playerId === 2) { p2on = false; d2.classList.remove('on'); }
+  elPpCtrl.textContent = p1on && p2on ? 'P1 + P2' : p1on ? 'P1' : p2on ? 'P2' : 'NONE';
+  toast(`PLAYER ${playerId} DISCONNECTED`, true);
+});
+
+socket.on('nav:prev', () => navigate(-1));
+socket.on('nav:next', () => navigate(+1));
+
+socket.on('nav:start', () => {
+  if (gameActive || sel < 0 || !games[sel]) return;
+  launchGameFS(games[sel]);
+  toast(`▶ ${games[sel].name.toUpperCase()}`);
+});
+
+socket.on('game:stop', () => {
+  if (gameActive) { stopGame(); toast('RETURNED TO LIBRARY'); }
+});
+
+socket.on('game:input', ({ action, key, code, playerId }) => {
+  if (!gameActive) return;
+  if (playerId === 2) injectP2(action, key);
+  else               injectP1(action, key, code);
+});
+
+socket.on('room:error', ({ message }) => toast(message.toUpperCase(), true));
+socket.on('disconnect', () => elPpStat.textContent = 'RECONNECTING');
+</script>
+</body>
+</html>

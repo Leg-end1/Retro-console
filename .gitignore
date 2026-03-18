@@ -1,0 +1,12 @@
+node_modules/
+npm-debug.log*
+.env
+.env.local
+
+# ROMs — never commit these
+public/games/*
+!public/games/.gitkeep
+
+# Self-hosted EmulatorJS — too large for git, document separately
+public/emu/*
+!public/emu/.gitkeep

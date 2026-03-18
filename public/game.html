@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+
+#game { width: 100%; height: 100%; }
+
+/* Hide every child EJS injects (start button, loading bar, toolbar)
+   until our splash is dismissed. body.ejs-ready reveals them. */
+#game > * { visibility: hidden; }
+body.ejs-ready #game > * { visibility: visible; }
+
+#splash {
+  position: fixed; inset: 0; z-index: 2147483647;
+  background: #0f151c;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 20px;
+  font-family: system-ui, sans-serif;
+  transition: opacity .6s ease;
+}
+#splash.gone { opacity: 0; pointer-events: none; }
+
+.sp-icon { font-size: 3rem; }
+.sp-name {
+  font-size: 1.1rem; font-weight: 700; color: #eaf0f6;
+  text-align: center; max-width: 280px; line-height: 1.3;
+}
+.sp-system { font-size: .65rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-top: -12px; }
+
+.sp-bar-track {
+  width: 200px; height: 2px;
+  background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden;
+}
+.sp-bar { height: 100%; width: 0%; border-radius: 2px; transition: width .2s ease; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="sp-icon" id="sp-icon">🎮</div>
+  <div>
+    <div class="sp-name"   id="sp-name">Loading…</div>
+    <div class="sp-system" id="sp-system" style="text-align:center;margin-top:5px"></div>
+  </div>
+  <div class="sp-bar-track"><div class="sp-bar" id="sp-bar"></div></div>
+</div>
+
+<div id="game"></div>
+
+<script>
+(function(){
+  var qs = new URLSearchParams(location.search);
+  var core     = qs.get('core')  || 'segaMD';
+  var rom      = qs.get('rom')   || '';
+  var dataPath = qs.get('data')  || 'emu/data/';
+  var name     = decodeURIComponent(qs.get('name') || 'Loading…');
+  var color    = qs.get('color') || '#4a9eed';
+
+  var SYS = {
+    segaMD:   { label:'Sega Mega Drive',   icon:'🎮', accent:'#4a9eed' },
+    segaMS:   { label:'Sega Master System',icon:'🎯', accent:'#4a9eed' },
+    segaGG:   { label:'Game Gear',         icon:'🎯', accent:'#4a9eed' },
+    sega32x:  { label:'Sega 32X',          icon:'🔴', accent:'#e05252' },
+    segaSaturn:{ label:'Sega Saturn',      icon:'🪐', accent:'#7c94e0' },
+    segaCD:   { label:'Sega CD',           icon:'💿', accent:'#60c0a0' },
+    nes:      { label:'Nintendo NES',      icon:'🕹', accent:'#f87171' },
+    snes:     { label:'Super Nintendo',    icon:'🎲', accent:'#a78bfa' },
+    gb:       { label:'Game Boy',          icon:'🟩', accent:'#4ade80' },
+    gba:      { label:'Game Boy Advance',  icon:'🎯', accent:'#fb923c' },
+    n64:      { label:'Nintendo 64',       icon:'🟡', accent:'#facc15' },
+    nds:      { label:'Nintendo DS',       icon:'📱', accent:'#38bdf8' },
+    psx:      { label:'PlayStation',       icon:'🎮', accent:'#a0c0f0' },
+    psp:      { label:'PSP',               icon:'📺', accent:'#60a8e0' },
+    arcade:   { label:'Arcade',            icon:'🕹', accent:'#fb923c' },
+    j2me:     { label:'J2ME Mobile',       icon:'📱', accent:'#c084fc' },
+  };
+  var sys = SYS[core] || { label: core, icon:'🎮', accent: color };
+
+  document.getElementById('sp-name').textContent   = name;
+  document.getElementById('sp-icon').textContent   = sys.icon;
+  document.getElementById('sp-system').textContent = sys.label;
+  document.getElementById('sp-system').style.color = sys.accent;
+  document.getElementById('sp-bar').style.background = sys.accent;
+
+  // Animate fake progress bar
+  var bar = document.getElementById('sp-bar'), pct = 0;
+  var tick = setInterval(function(){
+    pct = Math.min(pct + Math.random() * 8 + 2, 90);
+    bar.style.width = pct + '%';
+  }, 200);
+
+  var dismissed = false;
+  function dismiss() {
+    if (dismissed) return;
+    dismissed = true;
+    clearInterval(tick);
+    clearInterval(poll);
+    bar.style.width = '100%';
+    setTimeout(function(){
+      document.body.classList.add('ejs-ready');
+      document.getElementById('splash').classList.add('gone');
+      setTimeout(function(){ document.getElementById('splash').style.display='none'; }, 700);
+      try { window.parent.postMessage({ type:'ejs_started' }, '*'); } catch(e){}
+    }, 300);
+  }
+
+  // Wait for actual game pixels before dismissing
+  var poll = setInterval(function(){
+    var canvas = document.querySelector('#game canvas');
+    if (!canvas || !canvas.width) return;
+    try {
+      var d = canvas.getContext('2d').getImageData(0, 0, Math.min(canvas.width,32), Math.min(canvas.height,32)).data;
+      for (var i = 0; i < d.length; i += 4) {
+        if (d[i] > 10 || d[i+1] > 10 || d[i+2] > 10) { dismiss(); return; }
+      }
+    } catch(e) { dismiss(); }
+  }, 250);
+
+  setTimeout(dismiss, 30000); // hard fallback
+
+  // ── EJS config ──────────────────────────────────────────────────────────────
+  window.EJS_player             = '#game';
+  window.EJS_core               = core;
+  window.EJS_gameUrl            = rom;
+  window.EJS_pathtodata         = dataPath;
+  window.EJS_startOnLoaded      = true;   // correct var — skips EJS start screen
+  window.EJS_fullscreenOnLoaded = false;
+  window.EJS_color              = color;
+  window.EJS_onGameStart        = dismiss;
+  window.EJS_Buttons            = false;  // hide EJS toolbar
+
+  // ── P2 direct input bridge ───────────────────────────────────────────────────
+  // EJS exposes window.EJS_emulator.gameManager.simulateInput(playerIndex, btnSlot, value)
+  // playerIndex: 0=P1, 1=P2
+  // btnSlot: 0=B 1=Y 2=SELECT 3=START 4=UP 5=DOWN 6=LEFT 7=RIGHT 8=A 9=X 10=L 11=R 12=L2 13=R2
+  // value: 1=pressed, 0=released
+  //
+  // Key → RetroArch button slot (P1 default keyboard map, reused for P2 via direct API)
+  var KEY_SLOT = {
+    ArrowUp:4, ArrowDown:5, ArrowLeft:6, ArrowRight:7,
+    x:0, s:1, v:2, Enter:3,
+    z:8, a:9, q:10, e:11, Tab:12, r:13,
+    Shift:2,
+  };
+
+  // Called from parent index.html as: frame.contentWindow.EJS_p2input(action, key)
+  window.EJS_p2input = function(action, key) {
+    var slot = KEY_SLOT[key];
+    if (slot === undefined) return;
+    try {
+      var gm = window.EJS_emulator && window.EJS_emulator.gameManager;
+      if (gm && gm.simulateInput) {
+        gm.simulateInput(1, slot, action === 'keydown' ? 1 : 0);
+      }
+    } catch(e) {}
+  };
+
+}());
+</script>
+
+<script src="emu/data/loader.js"></script>
+</body>
+</html>
