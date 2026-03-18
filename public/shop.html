@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RetroHub — Game Shop</title>
+<title>RetroHub — Game Library</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -20,146 +20,101 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
   background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px)}
 
-/* ── TOPBAR ── */
-#topbar{
-  position:sticky;top:0;z-index:100;
-  background:var(--bg2);border-bottom:2px solid var(--cx);
-  display:flex;align-items:center;padding:0 20px;height:46px;gap:14px
-}
+#topbar{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:2px solid var(--cx);
+  display:flex;align-items:center;padding:0 20px;height:46px;gap:14px}
 .logo-link{text-decoration:none;display:flex;align-items:center;gap:8px;
   font-family:'Press Start 2P',monospace;font-size:9px;color:var(--cx);letter-spacing:1px}
 .logo-link:hover{color:var(--white)}
 .sep{width:2px;height:18px;background:var(--bdr2)}
-.shop-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--cy);letter-spacing:2px}
+.page-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--cy);letter-spacing:2px}
 .spacer{flex:1}
-#back-btn{
-  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--t2);
-  text-decoration:none;border:1px solid var(--bdr2);padding:5px 10px;
-  letter-spacing:1px;transition:all .1s
-}
-#back-btn:hover{border-color:var(--cx);color:var(--cx)}
+.topbar-info{font-family:'VT323',monospace;font-size:14px;color:var(--t2);letter-spacing:1px}
 
-/* ── MAIN LAYOUT ── */
-#main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:24px 16px}
+#main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:20px 16px 80px}
 
-/* ── SEARCH BAR ── */
-.search-section{margin-bottom:20px}
-.search-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cx);
-  letter-spacing:2px;margin-bottom:10px;display:block}
-.search-row{display:flex;gap:8px;flex-wrap:wrap}
-#search-input{
-  flex:1;min-width:200px;padding:10px 14px;
-  background:var(--panel);border:2px solid var(--bdr2);
-  font-family:'VT323',monospace;font-size:20px;letter-spacing:2px;color:var(--white);
-  outline:none;transition:border-color .15s
-}
-#search-input:focus{border-color:var(--cx);box-shadow:0 0 0 1px var(--cx)}
-#search-input::placeholder{color:var(--t3)}
-#sys-filter{
-  padding:10px 12px;background:var(--panel);border:2px solid var(--bdr2);
-  font-family:'VT323',monospace;font-size:18px;color:var(--white);outline:none;
-  cursor:pointer;min-width:160px
-}
-#sys-filter:focus{border-color:var(--cx)}
-#sys-filter option{background:var(--panel2)}
-#btn-search{
-  padding:10px 18px;background:var(--cx);border:none;cursor:pointer;
-  font-family:'Press Start 2P',monospace;font-size:7px;color:var(--bg);
-  letter-spacing:1px;white-space:nowrap;position:relative;transition:transform .1s
-}
-#btn-search::after{content:'';position:absolute;bottom:-3px;left:3px;right:-3px;top:3px;background:rgba(0,200,160,.25);z-index:-1}
-#btn-search:active{transform:translate(2px,2px)}
-#btn-search:active::after{bottom:-1px;left:1px;right:-1px;top:1px}
-#btn-search:disabled{opacity:.4;cursor:default}
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:2px solid var(--bdr)}
+.tab{font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 14px;cursor:pointer;
+  color:var(--t2);letter-spacing:1px;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .1s}
+.tab:hover{color:var(--txt)}
+.tab.active{color:var(--cx);border-bottom-color:var(--cx)}
+
+/* ── LIBRARY TAB ── */
+#tab-library{display:block}
+#tab-upload{display:none}
+
+.section-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cx);letter-spacing:2px;margin-bottom:12px;display:block}
+
+/* library grid */
+#lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:20px}
+.lib-card{background:var(--panel);border:1px solid var(--bdr);padding:12px;display:flex;flex-direction:column;gap:8px;transition:border-color .1s}
+.lib-card:hover{border-color:var(--bdr2)}
+.lc-sys{font-family:'Press Start 2P',monospace;font-size:5px;letter-spacing:1px;padding:2px 6px;border:1px solid;display:inline-block;align-self:flex-start}
+.lc-name{font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;color:var(--white);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lc-size{font-family:'VT323',monospace;font-size:13px;color:var(--t3);letter-spacing:1px}
+.lc-btns{display:flex;gap:5px;margin-top:auto}
+.lc-dl{flex:1;padding:7px 4px;background:var(--cx);border:none;cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--bg);letter-spacing:1px;transition:all .1s;position:relative}
+.lc-dl::after{content:'';position:absolute;bottom:-2px;left:2px;right:-2px;top:2px;background:rgba(0,200,160,.2);z-index:-1}
+.lc-dl:active{transform:translate(1px,1px)}
+.lc-del{padding:7px 8px;background:transparent;border:1px solid rgba(255,68,68,.3);cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--cr);letter-spacing:1px;transition:all .1s}
+.lc-del:hover{background:rgba(255,68,68,.08);border-color:var(--cr)}
+.lc-del:active{transform:translate(1px,1px)}
+
+/* search / filter bar */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+#lib-search{flex:1;min-width:180px;padding:9px 12px;background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:18px;letter-spacing:2px;color:var(--white);outline:none}
+#lib-search:focus{border-color:var(--cx)}
+#lib-search::placeholder{color:var(--t3)}
+#lib-sys{padding:9px 10px;background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:16px;color:var(--white);outline:none;cursor:pointer}
+#lib-sys option{background:var(--panel2)}
+
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;padding:48px 20px;text-align:center}
+.empty-ico{font-size:3rem;opacity:.2}
+.empty-txt{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--t3);letter-spacing:1px;line-height:2.4}
+
+/* ── UPLOAD TAB ── */
+.upload-area{border:2px dashed var(--bdr2);padding:40px 24px;text-align:center;cursor:pointer;
+  transition:border-color .2s;margin-bottom:16px;position:relative}
+.upload-area:hover,.upload-area.drag{border-color:var(--cx);background:rgba(0,255,200,.03)}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ua-icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
+.ua-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--white);letter-spacing:1px;margin-bottom:8px}
+.ua-sub{font-family:'VT323',monospace;font-size:15px;color:var(--t2);letter-spacing:1px;line-height:1.6}
+
+#upload-queue{display:flex;flex-direction:column;gap:6px}
+.uq-item{background:var(--panel);border:1px solid var(--bdr);padding:10px 12px;
+  display:flex;align-items:center;gap:12px}
+.uq-name{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--white);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uq-size{font-family:'VT323',monospace;font-size:14px;color:var(--t3);flex-shrink:0}
+.uq-bar-wrap{width:120px;flex-shrink:0;height:3px;background:var(--bdr);overflow:hidden}
+.uq-bar{height:100%;width:0%;background:var(--cx);transition:width .1s}
+.uq-status{font-family:'Press Start 2P',monospace;font-size:5px;letter-spacing:1px;flex-shrink:0;min-width:50px;text-align:right}
+.uq-status.ok{color:var(--cg)}
+.uq-status.err{color:var(--cr)}
+.uq-status.running{color:var(--cy)}
 
 /* ── STATUS BAR ── */
-#status-bar{
-  font-family:'VT323',monospace;font-size:16px;color:var(--t2);
-  letter-spacing:2px;margin-bottom:14px;min-height:22px
-}
-#status-bar.ok{color:var(--cg)}
-#status-bar.err{color:var(--cr)}
+#status-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--bg2);border-top:1px solid var(--bdr);
+  padding:8px 20px;display:flex;align-items:center;gap:14px}
+.sb-txt{font-family:'VT323',monospace;font-size:15px;color:var(--t2);letter-spacing:1px;flex:1}
+.sb-txt.ok{color:var(--cg)}
+.sb-txt.err{color:var(--cr)}
+.sb-count{font-family:'VT323',monospace;font-size:14px;color:var(--t3);letter-spacing:1px}
 
-/* ── RESULTS GRID ── */
-#results{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:10px
-}
-
-.game-card{
-  background:var(--panel);border:1px solid var(--bdr);
-  padding:12px;display:flex;flex-direction:column;gap:8px;
-  transition:border-color .1s;position:relative
-}
-.game-card:hover{border-color:var(--bdr2)}
-.game-card.in-library{border-color:rgba(68,255,136,.3)}
-
-.gc-system{
-  font-family:'Press Start 2P',monospace;font-size:5px;letter-spacing:1px;
-  padding:2px 6px;border:1px solid;display:inline-block;align-self:flex-start
-}
-.gc-title{
-  font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;
-  color:var(--white);line-height:1.4;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
-}
-.gc-size{font-family:'VT323',monospace;font-size:13px;color:var(--t3);letter-spacing:1px}
-.gc-ext{font-family:'VT323',monospace;font-size:13px;color:var(--t2);letter-spacing:1px}
-
-.gc-actions{margin-top:auto;display:flex;gap:6px;align-items:center}
-.gc-add{
-  flex:1;padding:8px;background:var(--cg);border:none;cursor:pointer;
-  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--bg);
-  letter-spacing:1px;transition:all .1s;position:relative
-}
-.gc-add::after{content:'';position:absolute;bottom:-2px;left:2px;right:-2px;top:2px;background:rgba(68,255,136,.2);z-index:-1}
-.gc-add:active{transform:translate(1px,1px)}
-.gc-add:disabled{opacity:.4;cursor:default;background:var(--t3)}
-.gc-add.loading{background:var(--cy);color:var(--bg);animation:blink .6s step-end infinite}
-.gc-add.done{background:var(--cx);color:var(--bg)}
-.gc-add.error{background:var(--cr);color:#fff}
-
-/* progress bar inside card */
-.gc-progress{height:3px;background:var(--bdr);margin-top:4px;overflow:hidden;display:none}
-.gc-progress.show{display:block}
-.gc-progress-bar{height:100%;width:0%;background:var(--cx);transition:width .2s}
-
-/* ── DOWNLOAD QUEUE (bottom bar) ── */
-#dl-queue{
-  position:fixed;bottom:0;left:0;right:0;z-index:200;
-  background:var(--bg2);border-top:2px solid var(--cy);
-  padding:10px 20px;display:none;align-items:center;gap:14px
-}
-#dl-queue.show{display:flex}
-.dq-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cy);letter-spacing:1px;white-space:nowrap}
-.dq-name{font-family:'VT323',monospace;font-size:16px;color:var(--white);letter-spacing:1px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dq-bar-wrap{width:200px;flex-shrink:0;height:4px;background:var(--bdr);overflow:hidden}
-.dq-bar{height:100%;width:0%;background:var(--cy);transition:width .15s}
-.dq-pct{font-family:'VT323',monospace;font-size:14px;color:var(--cy);min-width:36px;text-align:right}
-
-/* ── EMPTY STATE ── */
-.empty-state{
-  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:14px;padding:60px 20px;text-align:center
-}
-.empty-ico{font-size:3rem;opacity:.2}
-.empty-txt{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--t3);letter-spacing:2px;line-height:2.2}
-
-/* System colour map */
-.sys-nes     {border-color:#ff5555;color:#ff5555}
-.sys-snes    {border-color:#cc44ff;color:#cc44ff}
-.sys-gb      {border-color:#44ff88;color:#44ff88}
-.sys-gba     {border-color:#ffaa00;color:#ffaa00}
-.sys-n64     {border-color:#ffe600;color:#ffe600}
-.sys-nds     {border-color:#44aaff;color:#44aaff}
-.sys-segaMD  {border-color:#00ffc8;color:#00ffc8}
-.sys-psx     {border-color:#8888ff;color:#8888ff}
-.sys-psp     {border-color:#44aaff;color:#44aaff}
-.sys-arcade  {border-color:#ff8800;color:#ff8800}
-.sys-default {border-color:#4a7a74;color:#4a7a74}
-
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+/* system colours */
+.sys-nes{border-color:#ff5555;color:#ff5555}.sys-snes{border-color:#cc44ff;color:#cc44ff}
+.sys-gb{border-color:#44ff88;color:#44ff88}.sys-gba{border-color:#ffaa00;color:#ffaa00}
+.sys-n64{border-color:#ffe600;color:#ffe600}.sys-nds{border-color:#44aaff;color:#44aaff}
+.sys-segaMD{border-color:#00ffc8;color:#00ffc8}.sys-psx{border-color:#8888ff;color:#8888ff}
+.sys-psp{border-color:#44aaff;color:#44aaff}.sys-arcade{border-color:#ff8800;color:#ff8800}
+.sys-default{border-color:#4a7a74;color:#4a7a74}
 </style>
 </head>
 <body>
@@ -167,20 +122,26 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
 <div id="topbar">
   <a class="logo-link" href="/">◀ RETRO HUB</a>
   <div class="sep"></div>
-  <div class="shop-title">► GAME SHOP</div>
+  <div class="page-title">► GAME LIBRARY</div>
   <div class="spacer"></div>
+  <div class="topbar-info" id="lib-count">LOADING...</div>
 </div>
 
 <div id="main">
 
-  <div class="search-section">
-    <span class="search-label">► SEARCH ARCHIVE.ORG</span>
-    <div class="search-row">
-      <input id="search-input" type="text" placeholder="SEARCH GAME TITLE..." autocomplete="off" spellcheck="false">
-      <select id="sys-filter">
+  <div class="tabs">
+    <div class="tab active" id="tab-btn-library" onclick="switchTab('library')">📂 LIBRARY</div>
+    <div class="tab" id="tab-btn-upload" onclick="switchTab('upload')">⬆ UPLOAD ROMS</div>
+  </div>
+
+  <!-- LIBRARY TAB -->
+  <div id="tab-library">
+    <div class="filter-row">
+      <input id="lib-search" type="text" placeholder="SEARCH LIBRARY..." autocomplete="off" spellcheck="false" oninput="renderLibrary()">
+      <select id="lib-sys" onchange="renderLibrary()">
         <option value="">ALL SYSTEMS</option>
         <option value="segaMD">SEGA MEGA DRIVE</option>
-        <option value="nes">NINTENDO NES</option>
+        <option value="nes">NES</option>
         <option value="snes">SUPER NINTENDO</option>
         <option value="gb">GAME BOY</option>
         <option value="gba">GAME BOY ADVANCE</option>
@@ -188,309 +149,230 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
         <option value="nds">NINTENDO DS</option>
         <option value="psx">PLAYSTATION</option>
         <option value="psp">PSP</option>
-        <option value="segaMS">SEGA MASTER SYSTEM</option>
+        <option value="segaMS">MASTER SYSTEM</option>
         <option value="segaGG">GAME GEAR</option>
         <option value="arcade">ARCADE</option>
       </select>
-      <button id="btn-search">SEARCH</button>
     </div>
+    <div id="lib-grid"></div>
   </div>
 
-  <div id="status-bar">ENTER A SEARCH TERM TO FIND GAMES</div>
-  <div id="results">
-    <div class="empty-state">
-      <div class="empty-ico">🔍</div>
-      <div class="empty-txt">SEARCH FOR GAMES ABOVE<br>THEY WILL DOWNLOAD DIRECTLY<br>INTO YOUR LIBRARY</div>
+  <!-- UPLOAD TAB -->
+  <div id="tab-upload">
+    <span class="section-label">► ADD ROMS TO SERVER LIBRARY</span>
+    <div class="upload-area" id="upload-area">
+      <input type="file" id="file-input" multiple accept=".nes,.fds,.smc,.sfc,.gb,.gbc,.gba,.z64,.n64,.v64,.nds,.gen,.md,.smd,.bin,.sms,.gg,.32x,.pbp,.chd,.cue,.iso,.cso,.a26,.lnx,.pce,.ngp,.ws,.zip,.jar,.col,.vb,.d64,.adf">
+      <div class="ua-icon">📁</div>
+      <div class="ua-title">DROP ROM FILES HERE</div>
+      <div class="ua-sub">Or click to browse files<br>Supports NES, SNES, GB, GBA, N64, MD, PSX, PSP and more<br>Files upload directly to the server library</div>
     </div>
+    <div id="upload-queue"></div>
   </div>
 
 </div>
 
-<!-- Download progress bar (bottom) -->
-<div id="dl-queue">
-  <div class="dq-label">DOWNLOADING</div>
-  <div class="dq-name" id="dq-name">—</div>
-  <div class="dq-bar-wrap"><div class="dq-bar" id="dq-bar"></div></div>
-  <div class="dq-pct" id="dq-pct">0%</div>
+<div id="status-bar">
+  <div class="sb-txt" id="sb-txt">READY</div>
+  <div class="sb-count" id="sb-count"></div>
 </div>
 
 <script>
-// ── System config ──────────────────────────────────────────────────────────
-const SYS_INFO = {
-  segaMD: { label:'Sega MD',    ext:['.gen','.md','.smd','.bin'], cls:'sys-segaMD', q:'sega genesis mega drive' },
-  nes:    { label:'NES',        ext:['.nes','.fds'],              cls:'sys-nes',    q:'nintendo nes famicom roms' },
-  snes:   { label:'SNES',       ext:['.smc','.sfc','.fig'],       cls:'sys-snes',   q:'super nintendo snes roms' },
-  gb:     { label:'Game Boy',   ext:['.gb','.gbc'],               cls:'sys-gb',     q:'game boy color roms' },
-  gba:    { label:'GBA',        ext:['.gba'],                     cls:'sys-gba',    q:'game boy advance gba roms' },
-  n64:    { label:'N64',        ext:['.z64','.n64','.v64'],       cls:'sys-n64',    q:'nintendo 64 n64 roms' },
-  nds:    { label:'NDS',        ext:['.nds'],                     cls:'sys-nds',    q:'nintendo ds nds roms' },
-  psx:    { label:'PlayStation',ext:['.pbp','.chd','.cue'],       cls:'sys-psx',    q:'playstation psx roms' },
-  psp:    { label:'PSP',        ext:['.cso','.iso'],              cls:'sys-psp',    q:'playstation portable psp iso cso' },
-  segaMS: { label:'Master Sys', ext:['.sms'],                     cls:'sys-segaMD', q:'sega master system roms' },
-  segaGG: { label:'Game Gear',  ext:['.gg'],                      cls:'sys-segaMD', q:'sega game gear roms' },
-  arcade: { label:'Arcade',     ext:['.zip'],                     cls:'sys-arcade', q:'arcade mame fbneo roms' },
+// ── Helpers ────────────────────────────────────────────────────────────────
+const EXT_CORE = {
+  '.nes':'nes','.fds':'nes','.smc':'snes','.sfc':'snes','.fig':'snes',
+  '.gb':'gb','.gbc':'gb','.gba':'gba','.z64':'n64','.n64':'n64','.v64':'n64',
+  '.nds':'nds','.gen':'segaMD','.md':'segaMD','.smd':'segaMD','.bin':'segaMD',
+  '.sms':'segaMS','.gg':'segaGG','.32x':'sega32x',
+  '.pbp':'psx','.chd':'psx','.cue':'psx','.iso':'psx','.cso':'psp',
+  '.a26':'atari2600','.lnx':'lynx','.pce':'pce','.ngp':'ngp',
+  '.ws':'ws','.wsc':'ws','.zip':'arcade','.jar':'j2me','.col':'coleco','.vb':'vb',
+  '.d64':'vice_x64sc','.t64':'vice_x64sc','.adf':'amiga',
 };
-
-// All supported extensions
-const ALL_EXTS = new Set([
-  '.nes','.fds','.smc','.sfc','.fig','.gb','.gbc','.gba',
-  '.z64','.n64','.v64','.nds','.gen','.md','.smd','.bin',
-  '.sms','.gg','.32x','.pbp','.chd','.cue','.iso','.cso',
-  '.a26','.lnx','.j64','.pce','.ngp','.ws','.wsc','.zip',
-  '.jar','.jad','.col','.vb','.d64','.t64','.adf','.dosz',
-]);
-
-function extToCore(ext) {
-  const map = {
-    '.nes':'nes','.fds':'nes','.smc':'snes','.sfc':'snes','.fig':'snes',
-    '.gb':'gb','.gbc':'gb','.gba':'gba','.z64':'n64','.n64':'n64','.v64':'n64',
-    '.nds':'nds','.gen':'segaMD','.md':'segaMD','.smd':'segaMD','.bin':'segaMD',
-    '.sms':'segaMS','.gg':'segaGG','.32x':'sega32x',
-    '.pbp':'psx','.chd':'psx','.cue':'psx','.iso':'psx','.cso':'psp',
-    '.a26':'atari2600','.lnx':'lynx','.j64':'jaguar','.pce':'pce',
-    '.ngp':'ngp','.ws':'ws','.wsc':'ws','.zip':'arcade',
-    '.jar':'j2me','.jad':'j2me','.col':'coleco','.vb':'vb',
-    '.d64':'vice_x64sc','.t64':'vice_x64sc','.adf':'amiga','.dosz':'dos',
-  };
-  return map[ext] || null;
-}
-
-function sysClass(core) {
-  const map = {
-    nes:'sys-nes',snes:'sys-snes',gb:'sys-gb',gba:'sys-gba',n64:'sys-n64',
-    nds:'sys-nds',segaMD:'sys-segaMD',segaMS:'sys-segaMD',segaGG:'sys-segaMD',
-    psx:'sys-psx',psp:'sys-psp',arcade:'sys-arcade',
-  };
-  return map[core] || 'sys-default';
-}
-
-function fmtSize(bytes) {
-  if (!bytes) return '';
-  if (bytes > 1e9) return (bytes/1e9).toFixed(1)+'GB';
-  if (bytes > 1e6) return (bytes/1e6).toFixed(1)+'MB';
-  return (bytes/1e3).toFixed(0)+'KB';
-}
+const SYS_LABEL = {
+  nes:'NES',snes:'SNES',gb:'Game Boy',gba:'GBA',n64:'N64',nds:'NDS',
+  segaMD:'Mega Drive',segaMS:'Master Sys',segaGG:'Game Gear',sega32x:'32X',
+  psx:'PlayStation',psp:'PSP',atari2600:'Atari 2600',lynx:'Lynx',
+  pce:'PC Engine',ngp:'Neo Geo Pocket',ws:'WonderSwan',arcade:'Arcade',
+  j2me:'J2ME',coleco:'ColecoVision',vb:'Virtual Boy',vice_x64sc:'C64',amiga:'Amiga',
+};
+const SYS_CLS = {
+  nes:'sys-nes',snes:'sys-snes',gb:'sys-gb',gba:'sys-gba',n64:'sys-n64',nds:'sys-nds',
+  segaMD:'sys-segaMD',segaMS:'sys-segaMD',segaGG:'sys-segaMD',sega32x:'sys-segaMD',
+  psx:'sys-psx',psp:'sys-psp',arcade:'sys-arcade',
+};
+function getCore(filename) { return EXT_CORE[filename.slice(filename.lastIndexOf('.')).toLowerCase()]||null; }
+function fmtSize(b){ if(!b)return'?'; if(b>1e9)return(b/1e9).toFixed(1)+'GB'; if(b>1e6)return(b/1e6).toFixed(1)+'MB'; return(b/1e3).toFixed(0)+'KB'; }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── State ──────────────────────────────────────────────────────────────────
-let libraryFiles = new Set();
-let downloadQueue = [];
-let downloading = false;
+let allGames = [];
 
-// Fetch current library to show which games are already added
-async function refreshLibrary() {
+// ── Load library ───────────────────────────────────────────────────────────
+async function loadLibrary() {
   try {
     const r = await fetch('/api/games');
-    const games = await r.json();
-    libraryFiles = new Set(games.map(g => g.filename));
-    // Update any visible cards
-    document.querySelectorAll('.game-card').forEach(card => {
-      const fn = card.dataset.filename;
-      if (fn && libraryFiles.has(fn)) markAdded(card);
-    });
-  } catch(e) {}
+    allGames = await r.json();
+    renderLibrary();
+    document.getElementById('lib-count').textContent = allGames.length + ' GAMES';
+  } catch(e) {
+    setStatus('FAILED TO LOAD LIBRARY', true);
+  }
 }
-refreshLibrary();
 
-// ── Search ─────────────────────────────────────────────────────────────────
-const elInput  = document.getElementById('search-input');
-const elFilter = document.getElementById('sys-filter');
-const elBtn    = document.getElementById('btn-search');
-const elStatus = document.getElementById('status-bar');
-const elResults= document.getElementById('results');
+function renderLibrary() {
+  const q   = document.getElementById('lib-search').value.toLowerCase();
+  const sys = document.getElementById('lib-sys').value;
+  const grid = document.getElementById('lib-grid');
+  const filtered = allGames.filter(g =>
+    (!q || g.name.toLowerCase().includes(q)) &&
+    (!sys || g.core === sys)
+  );
 
-async function doSearch() {
-  const query  = elInput.value.trim();
-  const system = elFilter.value;
-  if (!query && !system) {
-    elStatus.textContent = 'ENTER A SEARCH TERM';
-    elStatus.className = 'err';
+  document.getElementById('lib-count').textContent = filtered.length + ' / ' + allGames.length + ' GAMES';
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-ico">🎮</div><div class="empty-txt">${allGames.length ? 'NO GAMES MATCH FILTER' : 'LIBRARY IS EMPTY\nUPLOAD ROMS TO GET STARTED'}</div></div>`;
     return;
   }
 
-  elBtn.disabled = true;
-  elStatus.textContent = 'SEARCHING ARCHIVE.ORG...';
-  elStatus.className = '';
-  elResults.innerHTML = '';
-
-  try {
-    const params = new URLSearchParams({ q: query, system });
-    const r = await fetch('/api/shop/search?' + params);
-    const data = await r.json();
-
-    if (!data.results || data.results.length === 0) {
-      elStatus.textContent = 'NO RESULTS FOUND — TRY DIFFERENT KEYWORDS';
-      elStatus.className = 'err';
-      elResults.innerHTML = '<div class="empty-state"><div class="empty-ico">🕹</div><div class="empty-txt">NO GAMES FOUND<br>TRY BROADER SEARCH</div></div>';
-      return;
-    }
-
-    elStatus.textContent = `FOUND ${data.results.length} FILE${data.results.length!==1?'S':''}`;
-    elStatus.className = 'ok';
-    renderResults(data.results);
-  } catch(e) {
-    elStatus.textContent = 'SEARCH ERROR — ' + e.message.toUpperCase();
-    elStatus.className = 'err';
-  } finally {
-    elBtn.disabled = false;
-  }
-}
-
-function renderResults(results) {
-  elResults.innerHTML = '';
-  results.forEach(item => {
+  grid.innerHTML = '';
+  filtered.forEach(g => {
+    const core = g.core;
+    const cls  = SYS_CLS[core] || 'sys-default';
+    const lbl  = SYS_LABEL[core] || core;
     const card = document.createElement('div');
-    card.className = 'game-card' + (libraryFiles.has(item.filename) ? ' in-library' : '');
-    card.dataset.filename = item.filename;
-    card.dataset.identifier = item.identifier;
-
-    const core = extToCore(item.ext);
-    const cls  = sysClass(core);
-    const sysLabel = Object.values(SYS_INFO).find(s => s.ext.includes(item.ext))?.label || item.ext.toUpperCase().replace('.','');
-
-    const isAdded = libraryFiles.has(item.filename);
-
+    card.className = 'lib-card';
     card.innerHTML = `
-      <span class="gc-system ${cls}">${sysLabel}</span>
-      <div class="gc-title">${escHtml(item.title)}</div>
-      <div>
-        <span class="gc-ext">${item.ext.toUpperCase()}</span>
-        ${item.size ? `<span class="gc-size"> · ${fmtSize(item.size)}</span>` : ''}
-      </div>
-      <div class="gc-actions">
-        <button class="gc-add ${isAdded?'done':''}" ${isAdded?'disabled':''}>
-          ${isAdded ? '✓ IN LIBRARY' : '+ ADD TO LIBRARY'}
-        </button>
-      </div>
-      <div class="gc-progress"><div class="gc-progress-bar"></div></div>
-    `;
-
-    const btn = card.querySelector('.gc-add');
-    if (!isAdded) {
-      btn.addEventListener('click', () => queueDownload(item, card));
-    }
-
-    elResults.appendChild(card);
+      <span class="lc-sys ${cls}">${lbl}</span>
+      <div class="lc-name">${esc(g.name)}</div>
+      <div class="lc-btns">
+        <button class="lc-dl" onclick="downloadGame('${esc(g.filename)}','${esc(g.name)}')">⬇ DOWNLOAD</button>
+        <button class="lc-del" onclick="deleteGame('${esc(g.filename)}','${esc(g.name)}',this)">🗑</button>
+      </div>`;
+    grid.appendChild(card);
   });
 }
 
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// ── Download game to user's device ────────────────────────────────────────
+function downloadGame(filename, name) {
+  // Create a temporary anchor and trigger browser download
+  const a = document.createElement('a');
+  a.href = '/games/' + encodeURIComponent(filename);
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setStatus('DOWNLOADING ' + name.toUpperCase() + ' TO YOUR DEVICE...', false, true);
+  setTimeout(() => setStatus('READY'), 3000);
 }
 
-// ── Download queue ─────────────────────────────────────────────────────────
-function queueDownload(item, card) {
-  downloadQueue.push({ item, card });
-  const btn = card.querySelector('.gc-add');
+// ── Delete game from server ────────────────────────────────────────────────
+async function deleteGame(filename, name, btn) {
+  if (!confirm(`Delete "${name}" from the server library?\nThis cannot be undone.`)) return;
   btn.disabled = true;
-  btn.classList.add('loading');
-  btn.textContent = 'QUEUED...';
-  if (!downloading) processQueue();
-}
-
-async function processQueue() {
-  if (downloadQueue.length === 0) {
-    downloading = false;
-    document.getElementById('dl-queue').classList.remove('show');
-    return;
+  try {
+    const r = await fetch('/api/games/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename }),
+    });
+    if (!r.ok) throw new Error('Delete failed');
+    allGames = allGames.filter(g => g.filename !== filename);
+    renderLibrary();
+    setStatus(name.toUpperCase() + ' DELETED FROM LIBRARY', false, true);
+  } catch(e) {
+    btn.disabled = false;
+    setStatus('DELETE FAILED: ' + e.message, true);
   }
-  downloading = true;
-  const { item, card } = downloadQueue.shift();
-  await downloadGame(item, card);
-  processQueue();
 }
 
-async function downloadGame(item, card) {
-  const btn      = card.querySelector('.gc-add');
-  const progWrap = card.querySelector('.gc-progress');
-  const progBar  = card.querySelector('.gc-progress-bar');
-  const dlQueue  = document.getElementById('dl-queue');
-  const dqName   = document.getElementById('dq-name');
-  const dqBar    = document.getElementById('dq-bar');
-  const dqPct    = document.getElementById('dq-pct');
+// ── Status bar ─────────────────────────────────────────────────────────────
+function setStatus(msg, err=false, ok=false) {
+  const el = document.getElementById('sb-txt');
+  el.textContent = msg;
+  el.className = 'sb-txt' + (err?' err':ok?' ok':'');
+}
 
-  btn.classList.remove('loading');
-  btn.classList.add('loading');
-  btn.textContent = 'DOWNLOADING...';
-  progWrap.classList.add('show');
-  dlQueue.classList.add('show');
-  dqName.textContent = item.title.toUpperCase();
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.getElementById('tab-library').style.display = name==='library' ? 'block' : 'none';
+  document.getElementById('tab-upload').style.display  = name==='upload'  ? 'block' : 'none';
+  document.getElementById('tab-btn-library').classList.toggle('active', name==='library');
+  document.getElementById('tab-btn-upload').classList.toggle('active', name==='upload');
+}
 
-  const updateProgress = (pct) => {
-    progBar.style.width = pct + '%';
-    dqBar.style.width = pct + '%';
-    dqPct.textContent = Math.round(pct) + '%';
-  };
+// ── Upload ROMs to server ──────────────────────────────────────────────────
+const fileInput = document.getElementById('file-input');
+const uploadArea = document.getElementById('upload-area');
+const uploadQueue = document.getElementById('upload-queue');
+
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag'));
+uploadArea.addEventListener('drop', e => {
+  e.preventDefault(); uploadArea.classList.remove('drag');
+  handleFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', () => { handleFiles([...fileInput.files]); fileInput.value=''; });
+
+function handleFiles(files) {
+  const valid = files.filter(f => {
+    const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
+    return EXT_CORE[ext];
+  });
+  if (!valid.length) { setStatus('NO SUPPORTED ROM FILES FOUND', true); return; }
+  valid.forEach(f => uploadFile(f));
+}
+
+async function uploadFile(file) {
+  const item = document.createElement('div');
+  item.className = 'uq-item';
+  item.innerHTML = `
+    <div class="uq-name">${esc(file.name)}</div>
+    <div class="uq-size">${fmtSize(file.size)}</div>
+    <div class="uq-bar-wrap"><div class="uq-bar" id="bar_${file.name.replace(/\W/g,'_')}"></div></div>
+    <div class="uq-status running" id="st_${file.name.replace(/\W/g,'_')}">UPLOADING</div>`;
+  uploadQueue.insertBefore(item, uploadQueue.firstChild);
+
+  const barId = 'bar_' + file.name.replace(/\W/g,'_');
+  const stId  = 'st_'  + file.name.replace(/\W/g,'_');
 
   try {
-    const r = await fetch('/api/shop/download', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ identifier: item.identifier, filename: item.filename }),
+    const xhr = new XMLHttpRequest();
+    await new Promise((resolve, reject) => {
+      xhr.upload.addEventListener('progress', e => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded/e.total)*100);
+          const bar = document.getElementById(barId);
+          if (bar) bar.style.width = pct + '%';
+        }
+      });
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) resolve();
+        else reject(new Error('HTTP ' + xhr.status));
+      });
+      xhr.addEventListener('error', () => reject(new Error('Network error')));
+      const fd = new FormData();
+      fd.append('rom', file, file.name);
+      xhr.open('POST', '/api/upload');
+      xhr.send(fd);
     });
 
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({ error: 'Download failed' }));
-      throw new Error(err.error || 'Download failed');
-    }
-
-    // Stream progress from response body (server sends JSON lines)
-    const reader = r.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop();
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try {
-          const msg = JSON.parse(line);
-          if (msg.progress !== undefined) updateProgress(msg.progress);
-          if (msg.done) {
-            updateProgress(100);
-            markAdded(card);
-            libraryFiles.add(item.filename);
-            elStatus.textContent = `✓ ${item.title.toUpperCase()} ADDED TO LIBRARY`;
-            elStatus.className = 'ok';
-          }
-          if (msg.error) throw new Error(msg.error);
-        } catch(e) { if (e.message !== 'JSON') throw e; }
-      }
-    }
+    const stEl = document.getElementById(stId);
+    const barEl = document.getElementById(barId);
+    if (stEl) { stEl.textContent='DONE'; stEl.className='uq-status ok'; }
+    if (barEl) barEl.style.width='100%';
+    setStatus(file.name + ' UPLOADED', false, true);
+    // Refresh library
+    await loadLibrary();
   } catch(e) {
-    btn.classList.remove('loading');
-    btn.classList.add('error');
-    btn.textContent = '✕ FAILED';
-    btn.disabled = false;
-    progWrap.classList.remove('show');
-    elStatus.textContent = 'DOWNLOAD FAILED: ' + e.message.toUpperCase();
-    elStatus.className = 'err';
-    // Re-enable after 3s
-    setTimeout(() => {
-      btn.classList.remove('error');
-      btn.textContent = '+ ADD TO LIBRARY';
-      btn.disabled = false;
-    }, 3000);
+    const stEl = document.getElementById(stId);
+    if (stEl) { stEl.textContent='FAILED'; stEl.className='uq-status err'; }
+    setStatus('UPLOAD FAILED: ' + e.message, true);
   }
 }
 
-function markAdded(card) {
-  const btn = card.querySelector('.gc-add');
-  const prog = card.querySelector('.gc-progress');
-  btn.classList.remove('loading','error');
-  btn.classList.add('done');
-  btn.textContent = '✓ IN LIBRARY';
-  btn.disabled = true;
-  card.classList.add('in-library');
-  if (prog) prog.classList.remove('show');
-}
-
-// ── Events ─────────────────────────────────────────────────────────────────
-elBtn.addEventListener('click', doSearch);
-elInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+loadLibrary();
 </script>
 </body>
 </html>

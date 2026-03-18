@@ -5,483 +5,290 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RetroHub</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root {
-  --bg:    #08080f;
-  --bg2:   #0d0d18;
-  --bg3:   #111120;
-  --panel: #14142a;
-  --bdr:   rgba(0,255,200,.1);
-  --bdr2:  rgba(0,255,200,.22);
-  --cx:    #00ffc8;
-  --cy:    #ffe600;
-  --cp:    #ff44cc;
-  --cr:    #ff4444;
-  --cg:    #44ff88;
-  --txt:   #a8c4c0;
-  --txt2:  #5a7a76;
-  --txt3:  #2a4a46;
-  --white: #e8f8f4;
+  --bg:#08080f; --bg2:#0d0d18; --bg3:#111120; --panel:#14142a; --panel2:#1a1a3a;
+  --bdr:rgba(0,255,200,.1); --bdr2:rgba(0,255,200,.22);
+  --cx:#00ffc8; --cy:#ffe600; --cp:#ff44cc; --cr:#ff4444; --cg:#44ff88; --co:#ff8800;
+  --txt:#a8c4c0; --t2:#4a7a74; --t3:#2a4a46; --white:#e8f8f4;
 }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { width:100%; height:100dvh; overflow:hidden; background:var(--bg); color:var(--txt); font-family:'Space Mono',monospace; user-select:none; }
+body::before { content:''; position:fixed; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(0,255,200,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,200,.025) 1px,transparent 1px);
+  background-size:32px 32px; }
+body::after { content:''; position:fixed; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px); }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  width: 100%; height: 100dvh; overflow: hidden;
-  background: var(--bg); color: var(--txt);
-  font-family: 'Space Mono', monospace;
-  user-select: none;
-  image-rendering: pixelated;
-}
-
-/* ── Pixel grid background ── */
-body::before {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image:
-    linear-gradient(rgba(0,255,200,.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,200,.025) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-/* ── Scanline overlay ── */
-body::after {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 1;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 3px,
-    rgba(0,0,0,.06) 3px, rgba(0,0,0,.06) 4px
-  );
-}
-
-/* ── FULLSCREEN PROMPT OVERLAY ── */
-#fs-prompt {
-  position: fixed; inset: 0; z-index: 999;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 32px; cursor: pointer;
-  transition: opacity .4s;
-}
-#fs-prompt.gone { opacity: 0; pointer-events: none; }
-
-.fsp-logo {
-  font-family: 'Press Start 2P', monospace;
-  font-size: clamp(16px, 3vw, 28px);
-  color: var(--cx);
-  text-shadow: 0 0 30px rgba(0,255,200,.5), 0 0 60px rgba(0,255,200,.2);
-  letter-spacing: 4px;
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-@keyframes glow-pulse { 0%,100%{text-shadow:0 0 20px rgba(0,255,200,.4)} 50%{text-shadow:0 0 40px rgba(0,255,200,.8),0 0 80px rgba(0,255,200,.3)} }
-
-.fsp-tagline {
-  font-family: 'VT323', monospace;
-  font-size: 20px;
-  color: var(--txt2);
-  letter-spacing: 3px;
-}
-
-.fsp-press {
-  font-family: 'Press Start 2P', monospace;
-  font-size: clamp(8px, 1.5vw, 12px);
-  color: var(--cy);
-  letter-spacing: 3px;
-  animation: blink 1s step-end infinite;
-}
+/* ── FULLSCREEN PROMPT ── */
+#fs-prompt { position:fixed; inset:0; z-index:999; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; cursor:pointer; transition:opacity .4s; }
+#fs-prompt.gone { opacity:0; pointer-events:none; }
+.fsp-logo { font-family:'Press Start 2P',monospace; font-size:clamp(14px,3vw,26px); color:var(--cx); letter-spacing:4px; animation:glow 2s ease-in-out infinite; }
+@keyframes glow { 0%,100%{text-shadow:0 0 20px rgba(0,255,200,.4)} 50%{text-shadow:0 0 40px rgba(0,255,200,.9),0 0 80px rgba(0,255,200,.3)} }
+.fsp-sub { font-family:'VT323',monospace; font-size:18px; color:var(--t2); letter-spacing:3px; }
+.fsp-box { background:var(--panel); border:2px solid var(--bdr2); padding:20px 32px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.fsp-code-lbl { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--t3); letter-spacing:2px; }
+.fsp-code { font-family:'VT323',monospace; font-size:52px; color:var(--white); letter-spacing:12px; animation:pulse 2.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.fsp-row { display:flex; align-items:center; gap:16px; }
+.fsp-url { font-family:'Space Mono',monospace; font-size:10px; color:var(--t2); }
+.fsp-url b { color:var(--cx); }
+.fsp-press { font-family:'Press Start 2P',monospace; font-size:clamp(7px,1.2vw,11px); color:var(--cy); letter-spacing:2px; animation:blink 1s step-end infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-.fsp-code-wrap {
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  border: 2px solid var(--bdr2); padding: 20px 40px;
-  background: var(--panel);
-}
-.fsp-code-lbl {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px; color: var(--txt3); letter-spacing: 2px;
-}
-.fsp-code {
-  font-family: 'VT323', monospace;
-  font-size: 52px; color: var(--white); letter-spacing: 12px;
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-.fsp-url {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px; color: var(--txt2);
-}
-.fsp-url b { color: var(--cx); }
+/* ── RECONNECTING OVERLAY ── */
+#reconnect-overlay { position:fixed; inset:0; z-index:500; background:rgba(8,8,15,.92);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  opacity:0; pointer-events:none; transition:opacity .3s; }
+#reconnect-overlay.show { opacity:1; pointer-events:all; }
+.rc-spinner { width:40px; height:40px; border:3px solid var(--bdr2); border-top-color:var(--cx); animation:spin .7s steps(8) infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.rc-title { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--white); letter-spacing:2px; }
+.rc-sub { font-family:'VT323',monospace; font-size:16px; color:var(--t2); letter-spacing:2px; }
+
+/* ── CONFIRM DIALOG ── */
+#confirm-dialog { position:fixed; inset:0; z-index:900; background:rgba(0,0,0,.8);
+  display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+#confirm-dialog.show { opacity:1; pointer-events:all; }
+.cdlg { background:var(--panel); border:2px solid var(--bdr2); padding:24px; max-width:340px; width:90%; display:flex; flex-direction:column; gap:16px; }
+.cdlg-title { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--white); letter-spacing:1px; line-height:1.8; }
+.cdlg-sub { font-family:'VT323',monospace; font-size:16px; color:var(--t2); letter-spacing:1px; line-height:1.5; }
+.cdlg-btns { display:flex; gap:8px; }
+.cdlg-btn { flex:1; padding:11px 8px; text-align:center; font-family:'Press Start 2P',monospace; font-size:7px; letter-spacing:1px; cursor:pointer; transition:all .1s; border:none; }
+.cdlg-btn:active { transform:translate(1px,1px); }
+.cdlg-cancel { background:var(--panel2); border:1px solid var(--bdr2); color:var(--t2); }
+.cdlg-confirm { background:var(--cr); color:#fff; position:relative; }
+.cdlg-confirm::after { content:''; position:absolute; bottom:-3px; left:3px; right:-3px; top:3px; background:rgba(255,60,60,.25); z-index:-1; }
+
+/* ── SESSION ENDED SCREEN ── */
+#session-ended { position:fixed; inset:0; z-index:800; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  opacity:0; pointer-events:none; transition:opacity .3s; }
+#session-ended.show { opacity:1; pointer-events:all; }
+.se-icon { font-size:3rem; animation:wbp 2s steps(2) infinite; }
+@keyframes wbp { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+.se-title { font-family:'Press Start 2P',monospace; font-size:11px; color:var(--white); letter-spacing:2px; }
+.se-sub { font-family:'VT323',monospace; font-size:16px; color:var(--t2); letter-spacing:2px; max-width:280px; text-align:center; line-height:1.6; }
+.se-btn { padding:12px 20px; background:var(--cx); border:none; cursor:pointer; font-family:'Press Start 2P',monospace; font-size:8px; color:var(--bg); letter-spacing:1px; position:relative; }
+.se-btn::after { content:''; position:absolute; bottom:-3px; left:3px; right:-3px; top:3px; background:rgba(0,200,160,.25); z-index:-1; }
+
+/* ── WAIT OVERLAY (no controllers) ── */
+#wait { position:fixed; inset:0; z-index:100; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; transition:opacity .5s; }
+#wait.gone { opacity:0; pointer-events:none; }
+.wait-logo { font-family:'Press Start 2P',monospace; font-size:14px; color:var(--cx); letter-spacing:3px; animation:glow 2s ease-in-out infinite; }
+.wait-box { background:var(--panel); border:2px solid var(--cx); padding:18px 32px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px; }
+.wait-code-lbl { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--t3); letter-spacing:2px; }
+.wait-code { font-family:'VT323',monospace; font-size:56px; letter-spacing:14px; color:var(--white); animation:pulse 2.5s ease-in-out infinite; }
+.wait-row { display:flex; align-items:center; gap:14px; margin-top:4px; }
+.wait-url { font-family:'Space Mono',monospace; font-size:10px; color:var(--t2); }
+.wait-url b { color:var(--cx); }
+.wait-sub { font-family:'VT323',monospace; font-size:17px; color:var(--t2); letter-spacing:2px; }
 
 /* ── MAIN SHELL ── */
-#shell { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100dvh; }
+#shell { position:relative; z-index:2; display:flex; flex-direction:column; height:100dvh; }
 
 /* ── TOP BAR ── */
-#topbar {
-  height: 44px; flex-shrink: 0;
-  background: var(--bg2);
-  border-bottom: 2px solid var(--cx);
-  display: flex; align-items: center; padding: 0 16px; gap: 12px;
-  position: relative; z-index: 10;
-}
-/* pixel corner accent */
-#topbar::after {
-  content: '';
-  position: absolute; bottom: -4px; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0,255,200,.15), transparent);
-}
-
-.logo {
-  display: flex; align-items: center; gap: 8px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px; color: var(--cx); letter-spacing: 1px;
-}
-.logo-px {
-  width: 24px; height: 24px;
-  background: var(--cx);
-  display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr);
-  gap: 1px; padding: 3px;
-}
-.logo-px span { background: var(--bg2); }
-.logo-px span:nth-child(2),.logo-px span:nth-child(5),.logo-px span:nth-child(8),
-.logo-px span:nth-child(9),.logo-px span:nth-child(12),.logo-px span:nth-child(15) { background: transparent; }
-
-.sep { width: 2px; height: 20px; background: var(--bdr2); }
-.spacer { flex: 1; }
-
-.pdots { display: flex; gap: 4px; align-items: center; }
-.pdot {
-  width: 10px; height: 10px; background: var(--panel);
-  border: 1px solid var(--bdr2); transition: all .2s;
-  /* pixel shape - no border radius */
-}
-.pdot.on { background: var(--cg); border-color: var(--cg); box-shadow: 0 0 8px var(--cg); }
-
-.room-pill {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--panel); border: 1px solid var(--bdr2);
-  padding: 4px 10px;
-}
-.room-lbl {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 6px; color: var(--txt3); letter-spacing: 1px;
-}
-.room-val {
-  font-family: 'VT323', monospace;
-  font-size: 20px; letter-spacing: 5px; color: var(--white);
-  animation: pulse 2.5s ease-in-out infinite;
-}
-.room-val.still { animation: none; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+#topbar { height:44px; flex-shrink:0; background:var(--bg2); border-bottom:2px solid var(--cx);
+  display:flex; align-items:center; padding:0 16px; gap:12px; position:relative; z-index:10; }
+.logo { display:flex; align-items:center; gap:8px; font-family:'Press Start 2P',monospace; font-size:10px; color:var(--cx); letter-spacing:1px; }
+.logo-sq { width:22px; height:22px; background:var(--cx); display:grid; grid-template-columns:repeat(4,1fr); gap:1px; padding:3px; flex-shrink:0; }
+.logo-sq span { background:var(--bg2); }
+.logo-sq span:nth-child(2),.logo-sq span:nth-child(6),.logo-sq span:nth-child(11),.logo-sq span:nth-child(15) { background:transparent; }
+.sep { width:2px; height:20px; background:var(--bdr2); }
+.spacer { flex:1; }
+.pdots { display:flex; gap:4px; align-items:center; }
+.plabel { font-family:'VT323',monospace; font-size:13px; color:var(--t3); letter-spacing:1px; }
+.pdot { width:10px; height:10px; background:var(--panel); border:1px solid var(--bdr2); transition:all .2s; }
+.pdot.on { background:var(--cg); border-color:var(--cg); box-shadow:0 0 8px var(--cg); }
+.pdot.away { background:var(--cy); border-color:var(--cy); }
+.room-pill { display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid var(--bdr2); padding:4px 10px; }
+.room-lbl { font-family:'Press Start 2P',monospace; font-size:6px; color:var(--t3); letter-spacing:1px; }
+.room-val { font-family:'VT323',monospace; font-size:20px; letter-spacing:5px; color:var(--white); animation:pulse 2.5s ease-in-out infinite; }
+.room-val.still { animation:none; }
+.topbar-btn { font-family:'Press Start 2P',monospace; font-size:6px; color:var(--t2); border:1px solid var(--bdr2); background:transparent; padding:5px 9px; cursor:pointer; letter-spacing:1px; transition:all .1s; }
+.topbar-btn:hover { border-color:var(--cx); color:var(--cx); }
+.topbar-btn.danger:hover { border-color:var(--cr); color:var(--cr); }
 
 /* ── MAIN AREA ── */
-#main { flex: 1; display: flex; overflow: hidden; }
+#main { flex:1; display:flex; overflow:hidden; }
 
 /* ── SIDEBAR ── */
-#sidebar {
-  width: 210px; flex-shrink: 0;
-  background: var(--bg2); border-right: 2px solid var(--bdr);
-  display: flex; flex-direction: column; overflow: hidden;
-}
-.sb-head {
-  padding: 12px 14px 8px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px; color: var(--cx); letter-spacing: 2px;
-  border-bottom: 1px solid var(--bdr);
-}
-#game-list { flex: 1; overflow-y: auto; padding: 4px; }
-#game-list::-webkit-scrollbar { width: 4px; }
-#game-list::-webkit-scrollbar-thumb { background: var(--bdr2); }
-#game-list::-webkit-scrollbar-track { background: transparent; }
+#sidebar { width:210px; flex-shrink:0; background:var(--bg2); border-right:2px solid var(--bdr); display:flex; flex-direction:column; overflow:hidden; }
+.sb-head { padding:10px 14px 8px; font-family:'Press Start 2P',monospace; font-size:7px; color:var(--cx); letter-spacing:2px; border-bottom:1px solid var(--bdr); }
+#game-list { flex:1; overflow-y:auto; padding:4px; }
+#game-list::-webkit-scrollbar { width:3px; }
+#game-list::-webkit-scrollbar-thumb { background:var(--bdr2); }
+.grow { display:flex; align-items:center; gap:8px; padding:7px 8px; cursor:pointer; border:1px solid transparent; margin-bottom:2px; transition:background .08s; }
+.grow:hover { background:rgba(0,255,200,.04); border-color:var(--bdr); }
+.grow.sel { background:rgba(0,255,200,.08); border-color:var(--cx); }
+.grow.sel::before { content:'▶'; font-size:7px; color:var(--cx); flex-shrink:0; }
+.grow-icon { width:28px; height:28px; flex-shrink:0; background:var(--panel); border:1px solid var(--bdr); display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+.grow-info { min-width:0; flex:1; }
+.grow-name { font-family:'Space Mono',monospace; font-size:.66rem; font-weight:700; color:var(--txt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.grow.sel .grow-name { color:var(--white); }
+.grow-sys { font-family:'VT323',monospace; font-size:13px; color:var(--t3); letter-spacing:1px; }
+.sb-foot { padding:8px 12px; border-top:1px solid var(--bdr); font-family:'VT323',monospace; font-size:14px; color:var(--t3); }
+.sb-foot b { color:var(--t2); }
 
-.grow {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 8px; cursor: pointer;
-  border: 1px solid transparent; margin-bottom: 2px;
-  transition: background .08s;
-}
-.grow:hover { background: rgba(0,255,200,.04); border-color: var(--bdr); }
-.grow.sel { background: rgba(0,255,200,.08); border-color: var(--cx); }
-.grow.sel::before { content: '▶'; font-size: 8px; color: var(--cx); flex-shrink: 0; }
-.grow-icon {
-  width: 28px; height: 28px; flex-shrink: 0; background: var(--panel);
-  border: 1px solid var(--bdr); display: flex; align-items: center; justify-content: center;
-  font-size: .9rem;
-}
-.grow-info { min-width: 0; flex: 1; }
-.grow-name {
-  font-family: 'Space Mono', monospace;
-  font-size: .68rem; font-weight: 700; color: var(--txt);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.grow.sel .grow-name { color: var(--white); }
-.grow-sys {
-  font-family: 'VT323', monospace;
-  font-size: 13px; color: var(--txt3); margin-top: 1px; letter-spacing: 1px;
-}
-.sb-foot {
-  padding: 8px 12px; border-top: 1px solid var(--bdr);
-  font-family: 'VT323', monospace; font-size: 14px; color: var(--txt3);
-}
-.sb-foot b { color: var(--txt2); }
-
-/* ── DETAIL PANEL ── */
-#detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
-
-#hero { height: 200px; flex-shrink: 0; position: relative; overflow: hidden; background: var(--bg3); }
-#hero-svg { position: absolute; inset: 0; }
-#hero-svg svg { width: 100%; height: 100%; }
-#hero::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(to bottom, transparent 20%, rgba(8,8,15,.98) 100%);
-  pointer-events: none;
-}
-#hero-bottom { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 20px; z-index: 2; }
-#hero-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: clamp(9px, 1.8vw, 15px);
-  color: var(--white); line-height: 1.6; margin-bottom: 8px;
-  text-shadow: 0 2px 12px rgba(0,0,0,.9);
-}
-.hero-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag {
-  padding: 2px 7px; font-family: 'Press Start 2P', monospace;
-  font-size: 6px; letter-spacing: 1px;
-}
-.tag-core { background: rgba(0,255,200,.1); border: 1px solid var(--cx); color: var(--cx); }
-.tag-sys  { background: rgba(255,255,255,.04); border: 1px solid var(--bdr2); color: var(--txt2); }
-
-#detail-body { flex: 1; display: flex; overflow: hidden; }
-#detail-info { flex: 1; overflow-y: auto; padding: 16px 20px; }
-#detail-info::-webkit-scrollbar { width: 3px; }
-
-.info-empty {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; height: 100%; gap: 12px; color: var(--txt3);
-}
-.info-empty .ico { font-size: 2.5rem; opacity: .25; }
-.info-empty p {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px; text-align: center; line-height: 2.2; color: var(--txt3);
-}
-
-.info-grid {
-  display: grid; grid-template-columns: 90px 1fr;
-  gap: 1px; background: var(--bdr); overflow: hidden;
-}
-.info-grid dt, .info-grid dd { padding: 9px 12px; background: var(--panel); font-size: .72rem; }
-.info-grid dt {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 6px; color: var(--txt3); letter-spacing: 1px;
-}
-.info-grid dd { color: var(--white); font-weight: 700; font-family: 'Space Mono', monospace; font-size: .7rem; }
+/* ── DETAIL ── */
+#detail { flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--bg); }
+#hero { height:190px; flex-shrink:0; position:relative; overflow:hidden; background:var(--bg3); }
+#hero-svg { position:absolute; inset:0; }
+#hero-svg svg { width:100%; height:100%; }
+#hero::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,transparent 20%,rgba(8,8,15,.98) 100%); pointer-events:none; }
+#hero-bottom { position:absolute; bottom:0; left:0; right:0; padding:12px 20px; z-index:2; }
+#hero-title { font-family:'Press Start 2P',monospace; font-size:clamp(8px,1.6vw,14px); color:var(--white); line-height:1.7; margin-bottom:8px; text-shadow:0 2px 12px rgba(0,0,0,.9); }
+.hero-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.tag { padding:2px 7px; font-family:'Press Start 2P',monospace; font-size:6px; letter-spacing:1px; }
+.tag-core { background:rgba(0,255,200,.1); border:1px solid var(--cx); color:var(--cx); }
+.tag-sys  { background:rgba(255,255,255,.04); border:1px solid var(--bdr2); color:var(--t2); }
+#detail-body { flex:1; display:flex; overflow:hidden; }
+#detail-info { flex:1; overflow-y:auto; padding:14px 20px; }
+.info-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; }
+.info-empty .ico { font-size:2.5rem; opacity:.2; }
+.info-empty p { font-family:'Press Start 2P',monospace; font-size:7px; text-align:center; color:var(--t3); letter-spacing:1px; line-height:2.4; }
+.info-grid { display:grid; grid-template-columns:88px 1fr; gap:1px; background:var(--bdr); overflow:hidden; }
+.info-grid dt,.info-grid dd { padding:9px 12px; background:var(--panel); }
+.info-grid dt { font-family:'Press Start 2P',monospace; font-size:6px; color:var(--t3); letter-spacing:1px; }
+.info-grid dd { color:var(--white); font-weight:700; font-family:'Space Mono',monospace; font-size:.68rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 /* ── PLAY PANEL ── */
-#play-panel {
-  width: 180px; flex-shrink: 0; padding: 16px 12px;
-  border-left: 2px solid var(--bdr); background: var(--bg2);
-  display: flex; flex-direction: column; gap: 10px;
-}
-#btn-play {
-  width: 100%; padding: 12px 8px;
-  background: var(--cg); border: none; cursor: pointer;
-  font-family: 'Press Start 2P', monospace; font-size: 8px;
-  color: var(--bg); letter-spacing: 1px;
-  transition: all .1s; position: relative;
-}
-#btn-play::after {
-  content: ''; position: absolute;
-  bottom: -3px; left: 3px; right: -3px; top: 3px;
-  background: rgba(68,255,136,.25); z-index: -1;
-}
-#btn-play:hover:not(:disabled) { transform: translate(-1px, -1px); }
-#btn-play:active:not(:disabled) { transform: translate(1px, 1px); }
-#btn-play:active:not(:disabled)::after { bottom: -1px; left: 1px; right: -1px; top: 1px; }
-#btn-play:disabled { opacity: .3; cursor: default; }
-#btn-play:disabled::after { display: none; }
-
-.pp-lbl {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 6px; color: var(--txt3); letter-spacing: 1px;
-}
-.pp-val { font-family: 'VT323', monospace; font-size: 16px; color: var(--txt); margin-top: 2px; }
-.pp-div { height: 1px; background: var(--bdr); }
-.pp-hint { font-family: 'VT323', monospace; font-size: 14px; color: var(--txt3); line-height: 1.5; }
-.pp-hint b { color: var(--cy); }
-
-/* ── WAIT OVERLAY ── */
-#wait {
-  position: fixed; inset: 0; z-index: 100; background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-  transition: opacity .5s;
-}
-#wait.gone { opacity: 0; pointer-events: none; }
-.wait-logo {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 14px; color: var(--cx); letter-spacing: 3px;
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-.wait-code-box {
-  background: var(--panel); border: 2px solid var(--cx);
-  padding: 20px 36px; text-align: center;
-}
-.wait-code-lbl {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px; color: var(--txt3); letter-spacing: 2px; margin-bottom: 10px;
-}
-.wait-code {
-  font-family: 'VT323', monospace;
-  font-size: 58px; letter-spacing: 14px; color: var(--white);
-  animation: pulse 2.5s ease-in-out infinite;
-}
-.wait-sub {
-  font-family: 'VT323', monospace;
-  font-size: 18px; color: var(--txt2); letter-spacing: 2px;
-}
-.wait-url {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px; color: var(--txt3);
-}
-.wait-url b { color: var(--cx); }
+#play-panel { width:180px; flex-shrink:0; padding:14px 12px; border-left:2px solid var(--bdr); background:var(--bg2); display:flex; flex-direction:column; gap:10px; }
+#btn-play { width:100%; padding:12px 8px; background:var(--cg); border:none; cursor:pointer;
+  font-family:'Press Start 2P',monospace; font-size:8px; color:var(--bg); letter-spacing:1px; transition:all .1s; position:relative; }
+#btn-play::after { content:''; position:absolute; bottom:-3px; left:3px; right:-3px; top:3px; background:rgba(68,255,136,.25); z-index:-1; }
+#btn-play:hover:not(:disabled) { transform:translate(-1px,-1px); }
+#btn-play:active:not(:disabled) { transform:translate(1px,1px); }
+#btn-play:active:not(:disabled)::after { bottom:-1px; left:1px; right:-1px; top:1px; }
+#btn-play:disabled { opacity:.3; cursor:default; }
+#btn-play:disabled::after { display:none; }
+.pp-lbl { font-family:'Press Start 2P',monospace; font-size:6px; color:var(--t3); letter-spacing:1px; }
+.pp-val { font-family:'VT323',monospace; font-size:16px; color:var(--txt); margin-top:2px; }
+.pp-div { height:1px; background:var(--bdr); }
+.pp-hint { font-family:'VT323',monospace; font-size:14px; color:var(--t3); line-height:1.5; }
+.pp-hint b { color:var(--cy); }
 
 /* ── GAME VIEW ── */
-#gview {
-  position: fixed; inset: 0; z-index: 50; background: #000;
-  display: flex; flex-direction: column;
-  opacity: 0; pointer-events: none; transition: opacity .25s;
-  height: 100dvh;
-}
-#gview.vis { opacity: 1; pointer-events: all; }
-
-#gbar {
-  height: 36px; flex-shrink: 0;
-  background: var(--bg2); border-bottom: 2px solid var(--cx);
-  display: flex; align-items: center; padding: 0 12px; gap: 8px;
-}
-#gbar-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px; color: var(--white); letter-spacing: 1px;
-}
-.live-dot {
-  width: 6px; height: 6px; background: var(--cg);
-  box-shadow: 0 0 6px var(--cg); animation: ldot 1.8s ease-in-out infinite;
-}
+#gview { position:fixed; inset:0; z-index:50; background:#000; display:flex; flex-direction:column;
+  opacity:0; pointer-events:none; transition:opacity .25s; height:100dvh; }
+#gview.vis { opacity:1; pointer-events:all; }
+#gbar { height:36px; flex-shrink:0; background:var(--bg2); border-bottom:2px solid var(--cx);
+  display:flex; align-items:center; padding:0 12px; gap:8px; }
+#gbar-title { font-family:'Press Start 2P',monospace; font-size:8px; color:var(--white); letter-spacing:1px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.live-dot { width:6px; height:6px; background:var(--cg); box-shadow:0 0 6px var(--cg); animation:ldot 1.8s ease-in-out infinite; flex-shrink:0; }
 @keyframes ldot { 0%,100%{opacity:1} 50%{opacity:.2} }
-#gbar .spacer { flex: 1; }
-.gbar-btn {
-  padding: 3px 10px; border: 1px solid var(--bdr2);
-  background: var(--panel); cursor: pointer;
-  font-family: 'Press Start 2P', monospace; font-size: 6px;
-  color: var(--txt2); letter-spacing: 1px; transition: all .1s;
-}
-.gbar-btn:hover { border-color: var(--cx); color: var(--cx); }
-#btn-exit:hover { border-color: var(--cr); color: var(--cr); }
-
-.emu-slot { flex: 1; position: relative; overflow: hidden; }
-#frame1 { position: absolute; inset: 0; width: 100%; height: 100%; border: none; opacity: 0; transition: opacity .5s .1s; }
-#frame1.ready { opacity: 1; }
-#boot-cover {
-  position: absolute; inset: 0; z-index: 5; background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-  transition: opacity .5s;
-}
-#boot-cover.gone { opacity: 0; pointer-events: none; }
-.boot-spinner {
-  width: 32px; height: 32px;
-  border: 3px solid var(--bdr2); border-top-color: var(--cx);
-  /* square spinner — pixel style */
-  animation: spin .7s steps(8) infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.boot-txt {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px; color: var(--txt2); letter-spacing: 1px;
-  animation: blink 1s step-end infinite;
-}
+.gbar-btn { padding:3px 10px; border:1px solid var(--bdr2); background:var(--panel); cursor:pointer;
+  font-family:'Press Start 2P',monospace; font-size:6px; color:var(--t2); letter-spacing:1px; transition:all .1s; }
+.gbar-btn:hover { border-color:var(--cx); color:var(--cx); }
+#btn-exit:hover { border-color:var(--cr); color:var(--cr); }
+.emu-slot { flex:1; position:relative; overflow:hidden; }
+#frame1 { position:absolute; inset:0; width:100%; height:100%; border:none; opacity:0; transition:opacity .5s .1s; }
+#frame1.ready { opacity:1; }
+#boot-cover { position:absolute; inset:0; z-index:5; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .5s; }
+#boot-cover.gone { opacity:0; pointer-events:none; }
+.boot-spinner { width:32px; height:32px; border:3px solid var(--bdr2); border-top-color:var(--cx); animation:spin .7s steps(8) infinite; }
+.boot-txt { font-family:'Press Start 2P',monospace; font-size:8px; color:var(--t2); letter-spacing:1px; animation:blink 1s step-end infinite; }
 
 /* ── TOASTS ── */
-#toasts {
-  position: fixed; bottom: 16px; right: 16px; z-index: 9999;
-  display: flex; flex-direction: column-reverse; gap: 6px; pointer-events: none;
-}
-.toast {
-  background: var(--panel); border: 1px solid var(--bdr2);
-  padding: 7px 12px;
-  font-family: 'VT323', monospace; font-size: 15px; color: var(--txt);
-  display: flex; align-items: center; gap: 8px;
-  animation: tup .15s ease forwards, tdn .2s ease 3s forwards;
-  transform: translateY(8px); opacity: 0;
-}
-.toast .dot { width: 5px; height: 5px; background: var(--cx); flex-shrink: 0; }
-.toast.warn .dot { background: var(--cr); }
-@keyframes tup { to { transform: translateY(0); opacity: 1; } }
-@keyframes tdn { to { transform: translateY(-4px); opacity: 0; } }
+#toasts { position:fixed; bottom:16px; right:16px; z-index:9999; display:flex; flex-direction:column-reverse; gap:6px; pointer-events:none; }
+.toast { background:var(--panel); border:1px solid var(--bdr2); padding:7px 12px;
+  font-family:'VT323',monospace; font-size:14px; color:var(--txt); display:flex; align-items:center; gap:8px;
+  animation:tup .15s ease forwards, tdn .2s ease 3s forwards; transform:translateY(8px); opacity:0; }
+.toast .dot { width:5px; height:5px; background:var(--cx); flex-shrink:0; }
+.toast.warn .dot { background:var(--cr); }
+@keyframes tup { to{transform:translateY(0);opacity:1} }
+@keyframes tdn { to{transform:translateY(-4px);opacity:0} }
 </style>
 </head>
 <body>
 
-<!-- ── FULLSCREEN PROMPT (AirConsole style) ── -->
+<!-- FULLSCREEN PROMPT -->
 <div id="fs-prompt">
   <div class="fsp-logo">RETRO HUB</div>
-  <div class="fsp-tagline">MULTIPLAYER RETRO GAMING</div>
-  <div class="fsp-code-wrap">
+  <div class="fsp-sub">MULTIPLAYER RETRO GAMING</div>
+  <div class="fsp-box">
     <div class="fsp-code-lbl">ROOM CODE</div>
     <div class="fsp-code" id="fsp-code">----</div>
-    <div style="display:flex;align-items:center;gap:20px;margin-top:6px">
+    <div class="fsp-row">
       <div>
         <div class="fsp-url">Phone: <b id="fsp-url">...</b>/remote.html</div>
-        <div class="fsp-url" style="margin-top:4px;opacity:.6">OR SCAN QR CODE →</div>
+        <div class="fsp-url" style="margin-top:4px;opacity:.5">OR SCAN QR →</div>
       </div>
       <div id="fsp-qr" style="background:#fff;padding:5px;line-height:0;flex-shrink:0"></div>
     </div>
   </div>
-  <div class="fsp-press">▶ &nbsp;CLICK ANYWHERE TO START &nbsp;◀</div>
+  <div class="fsp-press">▶ CLICK ANYWHERE TO START ◀</div>
 </div>
 
-<!-- ── WAITING FOR CONTROLLER ── -->
+<!-- RECONNECTING OVERLAY -->
+<div id="reconnect-overlay">
+  <div class="rc-spinner"></div>
+  <div class="rc-title">RECONNECTING...</div>
+  <div class="rc-sub" id="rc-sub">CONNECTION LOST</div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div id="confirm-dialog">
+  <div class="cdlg">
+    <div class="cdlg-title" id="cdlg-title">ARE YOU SURE?</div>
+    <div class="cdlg-sub" id="cdlg-sub"></div>
+    <div class="cdlg-btns">
+      <div class="cdlg-btn cdlg-cancel" id="cdlg-cancel">CANCEL</div>
+      <div class="cdlg-btn cdlg-confirm" id="cdlg-confirm">CONFIRM</div>
+    </div>
+  </div>
+</div>
+
+<!-- SESSION ENDED (shown when screen:close fired) -->
+<div id="session-ended">
+  <div class="se-icon">🔌</div>
+  <div class="se-title">SESSION ENDED</div>
+  <div class="se-sub" id="se-sub">The host closed the session.</div>
+  <div class="se-btn" id="se-reload">START NEW SESSION</div>
+</div>
+
+<!-- WAIT FOR P1 -->
 <div id="wait">
   <div class="wait-logo">RETRO HUB</div>
   <div class="wait-sub">OPEN CONTROLLER ON YOUR PHONE</div>
-  <div class="wait-code-box">
+  <div class="wait-box">
     <div class="wait-code-lbl">ROOM CODE</div>
     <div class="wait-code" id="wcode">----</div>
-  </div>
-  <div style="display:flex;align-items:center;gap:20px">
-    <div>
-      <div class="wait-url">Go to: <b id="wait-url-txt">YOUR-IP:3000</b>/remote.html</div>
-      <div class="wait-url" style="margin-top:6px;opacity:.6">OR SCAN QR →</div>
+    <div class="wait-row">
+      <div>
+        <div class="wait-url">Go to: <b id="wait-url-txt">...</b>/remote.html</div>
+        <div class="wait-url" style="margin-top:4px;opacity:.5">OR SCAN QR →</div>
+      </div>
+      <div id="wait-qr" style="background:#fff;padding:5px;line-height:0;flex-shrink:0"></div>
     </div>
-    <div id="wait-qr" style="background:#fff;padding:6px;line-height:0"></div>
   </div>
-  <div class="wait-sub" style="color:var(--txt3)">WAITING FOR PLAYER 1...</div>
+  <div class="wait-sub" style="color:var(--t3)">WAITING FOR PLAYER 1...</div>
 </div>
 
-<!-- ── MAIN SHELL ── -->
+<!-- MAIN SHELL -->
 <div id="shell">
   <div id="topbar">
     <div class="logo">
-      <div class="logo-px">
-        <span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span>
-      </div>
+      <div class="logo-sq"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       RETRO HUB
     </div>
     <div class="sep"></div>
-    <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--txt3);letter-spacing:1px">LIBRARY</span>
-    <a href="/shop.html" style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--cy);letter-spacing:1px;text-decoration:none;border:1px solid rgba(255,230,0,.3);padding:4px 8px;transition:all .1s" onmouseover="this.style.borderColor='var(--cy)'" onmouseout="this.style.borderColor='rgba(255,230,0,.3)'">► SHOP</a>
+    <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--t3);letter-spacing:1px">LIBRARY</span>
     <div class="spacer"></div>
+    <a href="/shop.html" class="topbar-btn">► SHOP</a>
     <div class="pdots">
-      <span style="font-family:'VT323',monospace;font-size:13px;color:var(--txt3);letter-spacing:1px">P1</span>
-      <div class="pdot" id="d1"></div>
-      <span style="font-family:'VT323',monospace;font-size:13px;color:var(--txt3);letter-spacing:1px;margin-left:6px">P2</span>
-      <div class="pdot" id="d2"></div>
+      <span class="plabel">P1</span><div class="pdot" id="d1"></div>
+      <span class="plabel" style="margin-left:5px">P2</span><div class="pdot" id="d2"></div>
     </div>
     <div class="room-pill">
       <span class="room-lbl">ROOM</span>
       <span class="room-val" id="rcd">----</span>
     </div>
+    <button class="topbar-btn danger" id="btn-end-session" style="display:none">■ END</button>
   </div>
-
   <div id="main">
     <div id="sidebar">
       <div class="sb-head">► LIBRARY</div>
@@ -489,8 +296,7 @@ body::after {
       <div class="sb-foot" id="sbfoot">SCANNING...</div>
     </div>
     <div id="detail">
-      <div id="hero">
-        <div id="hero-svg"></div>
+      <div id="hero"><div id="hero-svg"></div>
         <div id="hero-bottom">
           <div id="hero-title">SELECT A GAME</div>
           <div class="hero-tags" id="hero-tags"></div>
@@ -498,15 +304,12 @@ body::after {
       </div>
       <div id="detail-body">
         <div id="detail-info">
-          <div class="info-empty" id="info-empty">
-            <div class="ico">🎮</div>
-            <p>PICK A GAME<br>FROM THE LIST</p>
-          </div>
+          <div class="info-empty" id="info-empty"><div class="ico">🎮</div><p>PICK A GAME<br>FROM THE LIST</p></div>
           <dl class="info-grid" id="info-grid" style="display:none">
-            <dt>TITLE</dt>  <dd id="i-title"></dd>
-            <dt>SYSTEM</dt> <dd id="i-system"></dd>
-            <dt>CORE</dt>   <dd id="i-core"></dd>
-            <dt>FILE</dt>   <dd id="i-file"></dd>
+            <dt>TITLE</dt><dd id="i-title"></dd>
+            <dt>SYSTEM</dt><dd id="i-system"></dd>
+            <dt>CORE</dt><dd id="i-core"></dd>
+            <dt>FILE</dt><dd id="i-file"></dd>
           </dl>
         </div>
         <div id="play-panel">
@@ -521,322 +324,340 @@ body::after {
   </div>
 </div>
 
-<!-- ── GAME VIEW ── -->
+<!-- GAME VIEW -->
 <div id="gview">
   <div id="gbar">
     <div id="gbar-title">—</div>
     <div class="live-dot"></div>
-    <div class="spacer"></div>
     <button class="gbar-btn" id="btn-fs">[ ]</button>
     <button class="gbar-btn" id="btn-exit">✕ EXIT</button>
   </div>
   <div class="emu-slot">
-    <div id="boot-cover">
-      <div class="boot-spinner"></div>
-      <div class="boot-txt" id="boot-txt">LOADING...</div>
-    </div>
+    <div id="boot-cover"><div class="boot-spinner"></div><div class="boot-txt" id="boot-txt">LOADING...</div></div>
     <iframe id="frame1" allowfullscreen allow="autoplay; gamepad"></iframe>
   </div>
 </div>
 
 <div id="toasts"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+// ── Session storage keys ───────────────────────────────────────────────────
+const SS_ROOM = 'rh_room_code';
+
 // ── System palette ─────────────────────────────────────────────────────────
 const SYS = {
-  segaMD:   { c:'#0a1a0e', a:'#00ffc8', label:'Sega Mega Drive',    icon:'🎮' },
-  segaMS:   { c:'#0a1a0e', a:'#00ffc8', label:'Sega Master System', icon:'🎯' },
-  segaGG:   { c:'#0a1a0e', a:'#00ffc8', label:'Game Gear',          icon:'🎯' },
-  sega32x:  { c:'#1a0a08', a:'#ff4444', label:'Sega 32X',           icon:'🔴' },
-  nes:      { c:'#180808', a:'#ff4444', label:'Nintendo NES',       icon:'🕹' },
-  snes:     { c:'#12081a', a:'#cc44ff', label:'Super Nintendo',     icon:'🎲' },
-  gb:       { c:'#081a08', a:'#44ff88', label:'Game Boy',           icon:'🟩' },
-  gba:      { c:'#1a1008', a:'#ffaa00', label:'Game Boy Advance',   icon:'🎯' },
-  n64:      { c:'#1a1808', a:'#ffe600', label:'Nintendo 64',        icon:'🟡' },
-  nds:      { c:'#08121a', a:'#44aaff', label:'Nintendo DS',        icon:'📱' },
-  psx:      { c:'#100a1a', a:'#8888ff', label:'PlayStation',        icon:'🎮' },
-  psp:      { c:'#081018', a:'#44aaff', label:'PSP',                icon:'📺' },
-  arcade:   { c:'#1a0808', a:'#ff6600', label:'Arcade',             icon:'🕹' },
-  j2me:     { c:'#140a1a', a:'#cc44ff', label:'J2ME Mobile',        icon:'📱' },
+  segaMD:{c:'#0a1a0e',a:'#00ffc8',label:'Sega Mega Drive',icon:'🎮'},
+  segaMS:{c:'#0a1a0e',a:'#00ffc8',label:'Sega Master System',icon:'🎯'},
+  segaGG:{c:'#0a1a0e',a:'#00ffc8',label:'Game Gear',icon:'🎯'},
+  sega32x:{c:'#1a0a08',a:'#ff4444',label:'Sega 32X',icon:'🔴'},
+  nes:{c:'#180808',a:'#ff4444',label:'Nintendo NES',icon:'🕹'},
+  snes:{c:'#12081a',a:'#cc44ff',label:'Super Nintendo',icon:'🎲'},
+  gb:{c:'#081a08',a:'#44ff88',label:'Game Boy',icon:'🟩'},
+  gba:{c:'#1a1008',a:'#ffaa00',label:'Game Boy Advance',icon:'🎯'},
+  n64:{c:'#1a1808',a:'#ffe600',label:'Nintendo 64',icon:'🟡'},
+  nds:{c:'#08121a',a:'#44aaff',label:'Nintendo DS',icon:'📱'},
+  psx:{c:'#100a1a',a:'#8888ff',label:'PlayStation',icon:'🎮'},
+  psp:{c:'#081018',a:'#44aaff',label:'PSP',icon:'📺'},
+  arcade:{c:'#1a0808',a:'#ff6600',label:'Arcade',icon:'🕹'},
 };
-const DEF = { c:'#0a1218', a:'#00ffc8', label:'Unknown', icon:'🎮' };
+const DEF = {c:'#0a1218',a:'#00ffc8',label:'Unknown',icon:'🎮'};
 
 function heroSVG(name, core) {
-  const s = SYS[core] || DEF;
-  const init = name.replace(/[^a-zA-Z0-9]/g,' ').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase() || '??';
-  // pixel-art style hero — blocky grid pattern
-  return `<svg viewBox="0 0 800 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-    <rect width="800" height="200" fill="${s.c}"/>
-    <pattern id="pg" width="16" height="16" patternUnits="userSpaceOnUse">
-      <rect width="16" height="16" fill="none"/>
-      <rect x="0" y="0" width="1" height="1" fill="${s.a}" opacity=".06"/>
-    </pattern>
-    <rect width="800" height="200" fill="url(#pg)"/>
-    <text x="20" y="165" font-family="monospace" font-weight="900" font-size="140" fill="${s.a}" opacity=".07" letter-spacing="-2">${init}</text>
+  const s = SYS[core]||DEF;
+  const init = name.replace(/[^a-zA-Z0-9]/g,' ').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase()||'??';
+  return `<svg viewBox="0 0 800 190" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="800" height="190" fill="${s.c}"/>
+    <pattern id="pg" width="16" height="16" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="1" height="1" fill="${s.a}" opacity=".06"/></pattern>
+    <rect width="800" height="190" fill="url(#pg)"/>
+    <text x="20" y="155" font-family="monospace" font-weight="900" font-size="130" fill="${s.a}" opacity=".07">${init}</text>
     <rect x="680" y="20" width="6" height="6" fill="${s.a}" opacity=".5"/>
     <rect x="692" y="20" width="6" height="6" fill="${s.a}" opacity=".3"/>
     <rect x="704" y="20" width="6" height="6" fill="${s.a}" opacity=".15"/>
     <rect x="680" y="32" width="6" height="6" fill="${s.a}" opacity=".3"/>
     <rect x="692" y="32" width="6" height="6" fill="${s.a}" opacity=".5"/>
     <rect x="704" y="32" width="6" height="6" fill="${s.a}" opacity=".3"/>
-    <rect x="680" y="44" width="6" height="6" fill="${s.a}" opacity=".15"/>
-    <rect x="692" y="44" width="6" height="6" fill="${s.a}" opacity=".3"/>
-    <rect x="704" y="44" width="6" height="6" fill="${s.a}" opacity=".5"/>
   </svg>`;
 }
 
 // ── State ──────────────────────────────────────────────────────────────────
-let games = [], sel = -1, gameActive = false, p1on = false, p2on = false;
+let games=[], sel=-1, gameActive=false, p1on=false, p2on=false;
+let p1away=false, p2away=false;
 
-const elList    = document.getElementById('game-list');
-const elSbfoot  = document.getElementById('sbfoot');
-const elWait    = document.getElementById('wait');
-const elWcode   = document.getElementById('wcode');
-const elRcd     = document.getElementById('rcd');
-const elFspCode = document.getElementById('fsp-code');
-const elHeroSvg = document.getElementById('hero-svg');
-const elHTitle  = document.getElementById('hero-title');
-const elHTags   = document.getElementById('hero-tags');
-const elEmpty   = document.getElementById('info-empty');
-const elGrid    = document.getElementById('info-grid');
-const elBtnPlay = document.getElementById('btn-play');
-const elPpHint  = document.getElementById('pp-hint');
-const elPpCtrl  = document.getElementById('pp-ctrl');
-const elPpStat  = document.getElementById('pp-status');
-const elGview   = document.getElementById('gview');
-const elGBarT   = document.getElementById('gbar-title');
-const elFrame1  = document.getElementById('frame1');
-const elBoot    = document.getElementById('boot-cover');
-const elBootTxt = document.getElementById('boot-txt');
-const d1 = document.getElementById('d1');
-const d2 = document.getElementById('d2');
-
-// ── Fullscreen prompt ──────────────────────────────────────────────────────
-const elFsPrompt = document.getElementById('fs-prompt');
-let fsPromptDismissed = false;
-
-function dismissFsPrompt() {
-  if (fsPromptDismissed) return;
-  fsPromptDismissed = true;
-  enterFullscreen();
-  elFsPrompt.classList.add('gone');
-}
-elFsPrompt.addEventListener('click', dismissFsPrompt);
-// Also auto-dismiss when P1 connects
-function autoFsOnController() {
-  if (!fsPromptDismissed) dismissFsPrompt();
-}
-
-// ── Fullscreen helpers ─────────────────────────────────────────────────────
-function enterFullscreen() {
-  const el = document.documentElement;
-  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
-  if (req) req.call(el).catch(() => {});
-}
-function exitFullscreenMode() {
-  const ex = document.exitFullscreen || document.webkitExitFullscreen;
-  if (ex) ex.call(document).catch(() => {});
-}
-function isFullscreen() {
-  return !!(document.fullscreenElement || document.webkitFullscreenElement);
-}
-document.getElementById('btn-fs').addEventListener('click', () => {
-  if (isFullscreen()) exitFullscreenMode(); else enterFullscreen();
-});
-document.getElementById('btn-exit').addEventListener('click', () => {
-  if (gameActive) { stopGame(); socket.emit('game:stop'); toast('RETURNED TO LIBRARY'); }
-});
+// ── DOM refs ───────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const elList=$('game-list'), elSbfoot=$('sbfoot'), elWait=$('wait'), elWcode=$('wcode');
+const elRcd=$('rcd'), elFspCode=$('fsp-code'), elHeroSvg=$('hero-svg');
+const elHTitle=$('hero-title'), elHTags=$('hero-tags'), elEmpty=$('info-empty');
+const elGrid=$('info-grid'), elBtnPlay=$('btn-play'), elPpHint=$('pp-hint');
+const elPpCtrl=$('pp-ctrl'), elPpStat=$('pp-status'), elGview=$('gview');
+const elGBarT=$('gbar-title'), elFrame1=$('frame1'), elBoot=$('boot-cover');
+const elBootTxt=$('boot-txt'), d1=$('d1'), d2=$('d2');
 
 // ── Toast ──────────────────────────────────────────────────────────────────
 function toast(msg, warn=false) {
-  const el = document.createElement('div');
-  el.className = 'toast' + (warn ? ' warn' : '');
-  el.innerHTML = `<div class="dot"></div>${msg}`;
-  document.getElementById('toasts').appendChild(el);
-  setTimeout(() => el.remove(), 3600);
+  const el=document.createElement('div');
+  el.className='toast'+(warn?' warn':'');
+  el.innerHTML=`<div class="dot"></div>${msg}`;
+  $('toasts').appendChild(el);
+  setTimeout(()=>el.remove(), 3600);
+}
+
+// ── Confirm dialog ─────────────────────────────────────────────────────────
+let confirmCallback = null;
+function confirm(title, sub, confirmLabel, cb) {
+  $('cdlg-title').textContent = title;
+  $('cdlg-sub').textContent = sub;
+  $('cdlg-confirm').textContent = confirmLabel;
+  confirmCallback = cb;
+  $('confirm-dialog').classList.add('show');
+}
+$('cdlg-cancel').addEventListener('click', () => { $('confirm-dialog').classList.remove('show'); confirmCallback=null; });
+$('cdlg-confirm').addEventListener('click', () => { $('confirm-dialog').classList.remove('show'); if(confirmCallback){confirmCallback();confirmCallback=null;} });
+
+// ── Reconnect overlay ──────────────────────────────────────────────────────
+function showReconnect(msg) { $('rc-sub').textContent=msg||'CONNECTION LOST'; $('reconnect-overlay').classList.add('show'); }
+function hideReconnect() { $('reconnect-overlay').classList.remove('show'); }
+
+// ── Session ended ──────────────────────────────────────────────────────────
+function showSessionEnded(msg) { $('se-sub').textContent=msg||''; $('session-ended').classList.add('show'); }
+$('se-reload').addEventListener('click', () => { sessionStorage.removeItem(SS_ROOM); location.reload(); });
+
+// ── Fullscreen ─────────────────────────────────────────────────────────────
+function enterFS() { const el=document.documentElement; (el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen)?.call(el).catch(()=>{}); }
+function exitFS() { (document.exitFullscreen||document.webkitExitFullscreen)?.call(document).catch(()=>{}); }
+function isFS() { return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+$('btn-fs').addEventListener('click', ()=>isFS()?exitFS():enterFS());
+
+const elFsPrompt = $('fs-prompt');
+let fsDismissed = false;
+function dismissFsPrompt() {
+  if (fsDismissed) return; fsDismissed=true;
+  enterFS(); elFsPrompt.classList.add('gone');
+}
+elFsPrompt.addEventListener('click', dismissFsPrompt);
+
+// ── QR codes ──────────────────────────────────────────────────────────────
+function buildQR(url) {
+  ['fsp-qr','wait-qr'].forEach(id => {
+    const el=$(id); if(!el||!window.QRCode) return;
+    el.innerHTML='';
+    new QRCode(el, { text:url, width:88, height:88, colorDark:'#000', colorLight:'#fff', correctLevel:QRCode.CorrectLevel.M });
+  });
 }
 
 // ── Library ────────────────────────────────────────────────────────────────
 function buildList() {
-  elList.innerHTML = '';
-  if (!games.length) { elSbfoot.textContent = 'NO ROMS FOUND'; return; }
-  games.forEach((g, i) => {
-    const s = SYS[g.core] || DEF;
-    const row = document.createElement('div');
-    row.className = 'grow' + (i === sel ? ' sel' : '');
-    row.innerHTML = `<div class="grow-icon">${s.icon}</div>
-      <div class="grow-info">
-        <div class="grow-name">${g.name}</div>
-        <div class="grow-sys">${g.system || g.core}</div>
-      </div>`;
-    row.addEventListener('click', () => selectGame(i));
+  elList.innerHTML='';
+  if (!games.length) { elSbfoot.textContent='NO ROMS FOUND'; return; }
+  games.forEach((g,i) => {
+    const s=SYS[g.core]||DEF;
+    const row=document.createElement('div');
+    row.className='grow'+(i===sel?' sel':'');
+    row.innerHTML=`<div class="grow-icon">${s.icon}</div><div class="grow-info"><div class="grow-name">${g.name}</div><div class="grow-sys">${g.system||g.core}</div></div>`;
+    row.addEventListener('click', ()=>selectGame(i));
     elList.appendChild(row);
   });
-  elSbfoot.innerHTML = `<b>${games.length}</b> GAMES`;
+  elSbfoot.innerHTML=`<b>${games.length}</b> GAMES`;
 }
-
 function selectGame(i) {
-  sel = Math.max(0, Math.min(i, games.length - 1));
-  elList.querySelectorAll('.grow').forEach((r, j) => r.classList.toggle('sel', j === sel));
-  elList.querySelectorAll('.grow')[sel]?.scrollIntoView({ block:'nearest', behavior:'smooth' });
-  const g = games[sel];
-  elHeroSvg.innerHTML = heroSVG(g.name, g.core);
-  elHTitle.textContent = g.name.toUpperCase();
-  elHTags.innerHTML = `<span class="tag tag-core">${g.core}</span><span class="tag tag-sys">${g.system}</span>`;
-  document.getElementById('i-title').textContent  = g.name;
-  document.getElementById('i-system').textContent = g.system;
-  document.getElementById('i-core').textContent   = g.core;
-  document.getElementById('i-file').textContent   = g.filename;
-  elGrid.style.display = '';
-  elEmpty.style.display = 'none';
-  elBtnPlay.disabled = false;
-  elPpHint.innerHTML = 'PRESS <b>START</b> ON P1';
-  socket.emit('hub:selection', { game: g });
+  sel=Math.max(0,Math.min(i,games.length-1));
+  elList.querySelectorAll('.grow').forEach((r,j)=>r.classList.toggle('sel',j===sel));
+  elList.querySelectorAll('.grow')[sel]?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  const g=games[sel];
+  elHeroSvg.innerHTML=heroSVG(g.name,g.core);
+  elHTitle.textContent=g.name.toUpperCase();
+  elHTags.innerHTML=`<span class="tag tag-core">${g.core}</span><span class="tag tag-sys">${g.system}</span>`;
+  $('i-title').textContent=g.name; $('i-system').textContent=g.system;
+  $('i-core').textContent=g.core; $('i-file').textContent=g.filename;
+  elGrid.style.display=''; elEmpty.style.display='none';
+  elBtnPlay.disabled=false; elPpHint.innerHTML='PRESS <b>START</b> ON P1';
+  socket.emit('hub:selection', {game:g});
+}
+function navigate(dir) {
+  if (gameActive||!games.length) return;
+  selectGame(sel<0?0:sel+dir);
 }
 
-function navigate(dir) {
-  if (gameActive || !games.length) return;
-  selectGame(sel < 0 ? 0 : sel + dir);
+// ── Controller dots ────────────────────────────────────────────────────────
+function updateDots() {
+  d1.classList.toggle('on', p1on && !p1away);
+  d1.classList.toggle('away', p1away);
+  d2.classList.toggle('on', p2on && !p2away);
+  d2.classList.toggle('away', p2away);
+  const parts=[];
+  if (p1on) parts.push(p1away?'P1 (away)':'P1');
+  if (p2on) parts.push(p2away?'P2 (away)':'P2');
+  elPpCtrl.textContent=parts.length?parts.join(' + '):'NONE';
 }
 
 // ── Game URL ───────────────────────────────────────────────────────────────
 function gameURL(g) {
-  const s = SYS[g.core] || DEF;
+  const s=SYS[g.core]||DEF;
   return `/game.html?core=${encodeURIComponent(g.core)}&rom=${encodeURIComponent('/games/'+g.filename)}&name=${encodeURIComponent(g.name)}&color=${encodeURIComponent(s.a)}&data=${encodeURIComponent('https://cdn.emulatorjs.org/stable/data/')}`;
 }
 
 // ── Boot cover ─────────────────────────────────────────────────────────────
 let _bootTimer;
-function dismissBoot() {
-  clearTimeout(_bootTimer);
-  elFrame1.classList.add('ready');
-  setTimeout(() => elBoot.classList.add('gone'), 150);
-}
-window.addEventListener('message', e => { if (e.data?.type === 'ejs_started') dismissBoot(); });
+function dismissBoot() { clearTimeout(_bootTimer); elFrame1.classList.add('ready'); setTimeout(()=>elBoot.classList.add('gone'),150); }
+window.addEventListener('message', e=>{ if(e.data?.type==='ejs_started') dismissBoot(); });
 
 // ── Launch / stop ──────────────────────────────────────────────────────────
 function launchGame(g) {
-  elGBarT.textContent = g.name.toUpperCase();
-  elBootTxt.textContent = 'LOADING ' + g.name.toUpperCase().slice(0,20) + '...';
-  elFrame1.classList.remove('ready');
-  elBoot.classList.remove('gone');
-  elGview.classList.add('vis');
-  gameActive = true;
-  elPpStat.textContent = 'PLAYING';
-  elFrame1.src = gameURL(g);
-  _bootTimer = setTimeout(dismissBoot, 35000);
+  elGBarT.textContent=g.name.toUpperCase();
+  elBootTxt.textContent='LOADING '+g.name.toUpperCase().slice(0,18)+'...';
+  elFrame1.classList.remove('ready'); elBoot.classList.remove('gone');
+  elGview.classList.add('vis'); gameActive=true; elPpStat.textContent='PLAYING';
+  elFrame1.src=gameURL(g); _bootTimer=setTimeout(dismissBoot,35000);
 }
-function launchGameFS(g) { launchGame(g); enterFullscreen(); }
-function stopGame() {
-  gameActive = false;
-  elGview.classList.remove('vis');
-  elFrame1.src = 'about:blank';
-  elPpStat.textContent = 'READY';
-}
+function launchGameFS(g) { launchGame(g); enterFS(); }
+function stopGame() { gameActive=false; elGview.classList.remove('vis'); elFrame1.src='about:blank'; elPpStat.textContent='READY'; }
 
-// ── Key injection ──────────────────────────────────────────────────────────
-const KC = { ArrowUp:38,ArrowDown:40,ArrowLeft:37,ArrowRight:39,Enter:13,Escape:27,Shift:16,Tab:9,' ':32,q:81,e:69,r:82,w:87,a:65,s:83,d:68,v:86,x:88,z:90 };
-function injectP1(type, key, code) {
+// ── Key injection ─────────────────────────────────────────────────────────
+// Cache the canvas target once the game starts — avoids DOM queries on every input
+const KC={ArrowUp:38,ArrowDown:40,ArrowLeft:37,ArrowRight:39,Enter:13,Escape:27,Shift:16,Tab:9,' ':32,q:81,e:69,r:82,w:87,a:65,s:83,d:68,v:86,x:88,z:90};
+let _cachedTarget=null, _cachedWin=null;
+
+function _getTarget() {
+  if (_cachedTarget) return { target:_cachedTarget, win:_cachedWin };
   try {
-    const kc = KC[key] || 0;
-    const ev = new KeyboardEvent(type, { key, code, bubbles:true, cancelable:true, keyCode:kc, which:kc });
-    const doc = elFrame1.contentDocument || elFrame1.contentWindow?.document;
-    const target = doc?.querySelector('canvas') || doc?.body;
-    if (target) target.dispatchEvent(ev);
-    elFrame1.contentWindow?.dispatchEvent(ev);
-  } catch(_) {}
-}
-function injectP2(action, key) {
-  try { elFrame1.contentWindow?.EJS_p2input?.(action, key); } catch(_) {}
+    const doc=elFrame1.contentDocument||elFrame1.contentWindow?.document;
+    const t=doc?.querySelector('canvas')||doc?.body;
+    if (t) { _cachedTarget=t; _cachedWin=elFrame1.contentWindow; }
+    return { target:t, win:elFrame1.contentWindow };
+  } catch(_){ return {}; }
 }
 
-elBtnPlay.addEventListener('click', () => {
-  if (!gameActive && sel >= 0 && games[sel]) launchGameFS(games[sel]);
+// Clear cache when new game loads
+elFrame1.addEventListener('load', ()=>{ _cachedTarget=null; _cachedWin=null; });
+
+function injectP1(type,key,code) {
+  try {
+    const kc=KC[key]||0;
+    const {target,win}=_getTarget();
+    // Reuse a single event object where possible (avoids GC pressure)
+    const ev=new KeyboardEvent(type,{key,code,bubbles:true,cancelable:true,keyCode:kc,which:kc});
+    if(target) target.dispatchEvent(ev);
+    if(win && win!==target) win.dispatchEvent(ev);
+  } catch(_){ _cachedTarget=null; }
+}
+
+function injectP2(action,key) {
+  try { _cachedWin?.EJS_p2input?.(action,key); } catch(_){}
+}
+
+// ── Button handlers ────────────────────────────────────────────────────────
+elBtnPlay.addEventListener('click', ()=>{ if(!gameActive&&sel>=0&&games[sel])launchGameFS(games[sel]); });
+
+$('btn-exit').addEventListener('click', ()=>{
+  if (!gameActive) return;
+  confirm('EXIT GAME?', 'This will stop the game for all players.', 'EXIT', ()=>{
+    stopGame(); socket.emit('screen:stop_game'); toast('RETURNED TO LIBRARY');
+  });
+});
+
+$('btn-end-session').addEventListener('click', ()=>{
+  confirm('END SESSION?', 'This disconnects all controllers and closes the room.', 'END SESSION', ()=>{
+    socket.emit('screen:close');
+    sessionStorage.removeItem(SS_ROOM);
+    location.reload();
+  });
 });
 
 // ── Socket ─────────────────────────────────────────────────────────────────
-const socket = io({ transports: ['polling','websocket'], upgrade: true });
+const socket = io({ transports:['polling','websocket'], upgrade:true });
 
-socket.on('connect', () => {
-  socket.emit('screen:register');
-  elPpStat.textContent = 'CONNECTING';
+socket.on('connect', ()=>{
+  hideReconnect();
+  elPpStat.textContent='CONNECTING';
+  // Try to reclaim existing room on reconnect/reload
+  const existingCode = sessionStorage.getItem(SS_ROOM);
+  socket.emit('screen:register', { existingCode: existingCode||'' });
 });
 
-socket.on('screen:registered', ({ roomCode }) => {
-  elRcd.textContent      = roomCode;
-  elWcode.textContent    = roomCode;
-  elFspCode.textContent  = roomCode;
-  elPpStat.textContent   = 'READY';
-  // Show IP in prompts
-  const ip = location.hostname;
-  const port = location.port ? ':' + location.port : '';
-  const remoteURL = location.protocol + '//' + ip + port + '/remote.html';
-  const urlEl = document.getElementById('fsp-url');
-  const waitUrlEl = document.getElementById('wait-url-txt');
-  if (urlEl) urlEl.textContent = ip + port;
-  if (waitUrlEl) waitUrlEl.textContent = ip + port;
-  // Generate QR codes pointing to /remote.html
-  ['fsp-qr','wait-qr'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el || !window.QRCode) return;
-    el.innerHTML = '';
-    new QRCode(el, {
-      text: remoteURL,
-      width: 100, height: 100,
-      colorDark: '#000000', colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M,
-    });
-  });
-  fetch('/api/games').then(r => r.json()).then(data => {
-    games = data;
-    buildList();
-    if (games.length) selectGame(0);
-  });
+socket.on('disconnect', ()=>{
+  showReconnect('CONNECTION LOST — RECONNECTING...');
+  elPpStat.textContent='RECONNECTING';
 });
 
-socket.on('controller:connected', ({ playerId }) => {
-  if (playerId === 1) {
-    p1on = true; d1.classList.add('on');
-    elWait.classList.add('gone');
-    elRcd.classList.add('still');
-    autoFsOnController();
+socket.on('screen:registered', ({ roomCode, reconnected, state }) => {
+  sessionStorage.setItem(SS_ROOM, roomCode);
+  elRcd.textContent=roomCode; elWcode.textContent=roomCode; elFspCode.textContent=roomCode;
+  elPpStat.textContent='READY';
+  $('btn-end-session').style.display='';
+
+  const ip=location.hostname; const port=location.port?':'+location.port:'';
+  const remoteURL=location.protocol+'//'+ip+port+'/remote.html';
+  $('fsp-url').textContent=ip+port; $('wait-url-txt').textContent=ip+port;
+  buildQR(remoteURL);
+
+  if (reconnected && state) {
+    // Restore UI state after reload
+    if (state.players.some(p=>p.playerId===1&&p.connected)) { p1on=true; p1away=false; elWait.classList.add('gone'); }
+    if (state.players.some(p=>p.playerId===2&&p.connected)) { p2on=true; p2away=false; }
+    if (state.players.some(p=>p.playerId===1&&!p.connected)) { p1on=true; p1away=true; }
+    if (state.players.some(p=>p.playerId===2&&!p.connected)) { p2on=true; p2away=true; }
+    elRcd.classList.add('still'); updateDots(); toast('SESSION RESTORED');
   }
-  if (playerId === 2) { p2on = true; d2.classList.add('on'); }
-  elPpCtrl.textContent = p1on && p2on ? 'P1 + P2' : p1on ? 'P1' : 'P2';
-  toast(`PLAYER ${playerId} CONNECTED`);
+
+  fetch('/api/games').then(r=>r.json()).then(data=>{ games=data; buildList(); if(games.length)selectGame(0); });
 });
 
-socket.on('controller:disconnected', ({ playerId }) => {
-  if (playerId === 1) { p1on = false; d1.classList.remove('on'); }
-  if (playerId === 2) { p2on = false; d2.classList.remove('on'); }
-  elPpCtrl.textContent = p1on && p2on ? 'P1 + P2' : p1on ? 'P1' : p2on ? 'P2' : 'NONE';
-  toast(`PLAYER ${playerId} DISCONNECTED`, true);
+socket.on('controller:connected', ({ playerId, reconnected }) => {
+  if (playerId===1) { p1on=true; p1away=false; elWait.classList.add('gone'); elRcd.classList.add('still'); dismissFsPrompt(); }
+  if (playerId===2) { p2on=true; p2away=false; }
+  updateDots(); toast(`PLAYER ${playerId} ${reconnected?'RECONNECTED':'CONNECTED'}`);
 });
 
-socket.on('nav:prev', () => navigate(-1));
-socket.on('nav:next', () => navigate(+1));
-
-socket.on('nav:start', () => {
-  if (gameActive || sel < 0 || !games[sel]) return;
-  launchGameFS(games[sel]);
-  toast(`▶ ${games[sel].name.toUpperCase()}`);
+socket.on('controller:disconnected', ({ playerId, permanent }) => {
+  if (permanent) {
+    if (playerId===1) { p1on=false; p1away=false; }
+    if (playerId===2) { p2on=false; p2away=false; }
+    toast(`PLAYER ${playerId} LEFT`, true);
+  } else {
+    if (playerId===1) p1away=true;
+    if (playerId===2) p2away=true;
+    toast(`PLAYER ${playerId} DISCONNECTED`, true);
+  }
+  updateDots();
+  // If all controllers gone and game active, pause
+  if (!p1on && !p2on && gameActive) toast('ALL CONTROLLERS DISCONNECTED', true);
 });
 
-socket.on('game:stop', () => {
-  if (gameActive) { stopGame(); toast('RETURNED TO LIBRARY'); }
+socket.on('nav:prev', ()=>navigate(-1));
+socket.on('nav:next', ()=>navigate(+1));
+socket.on('open:shop', ()=>{ window.location.href='/shop.html'; });
+
+socket.on('nav:start', ()=>{
+  if (gameActive||sel<0||!games[sel]) return;
+  launchGameFS(games[sel]); toast(`▶ ${games[sel].name.toUpperCase()}`);
 });
 
-socket.on('game:input', ({ action, key, code, playerId }) => {
+socket.on('game:stop', ()=>{ if(gameActive){stopGame();toast('RETURNED TO LIBRARY');} });
+
+socket.on('game:input', ({ action, key, code, playerId })=>{
   if (!gameActive) return;
-  if (playerId === 2) injectP2(action, key);
-  else               injectP1(action, key, code);
+  // Fast path: inline the dispatch to avoid extra function call overhead
+  if (playerId===2) {
+    try { _cachedWin?.EJS_p2input?.(action,key); } catch(_){}
+  } else {
+    try {
+      const kc=KC[key]||0;
+      const {target,win}=_getTarget();
+      const ev=new KeyboardEvent(action==='keydown'?'keydown':'keyup',{key,code,bubbles:true,cancelable:true,keyCode:kc,which:kc});
+      if(target)target.dispatchEvent(ev);
+      if(win&&win!==target)win.dispatchEvent(ev);
+    } catch(_){ _cachedTarget=null; }
+  }
 });
 
-socket.on('open:shop', () => { window.location.href = '/shop.html'; });
-socket.on('room:error', ({ message }) => toast(message.toUpperCase(), true));
-socket.on('disconnect', () => elPpStat.textContent = 'RECONNECTING');
+socket.on('session:ended', ({ reason })=>{
+  stopGame();
+  sessionStorage.removeItem(SS_ROOM);
+  showSessionEnded(reason==='host_closed'?'The host closed the session.':'Session ended unexpectedly.');
+});
+
+socket.on('room:error', ({ message })=>toast(message.toUpperCase(),true));
 </script>
 </body>
 </html>

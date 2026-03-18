@@ -55,7 +55,7 @@ body.ejs-ready #game > * { visibility: visible; }
   var qs = new URLSearchParams(location.search);
   var core     = qs.get('core')  || 'segaMD';
   var rom      = qs.get('rom')   || '';
-  var dataPath = qs.get('data')  || 'emu/data/';
+  var dataPath = qs.get('data')  || 'https://cdn.emulatorjs.org/stable/data/';
   var name     = decodeURIComponent(qs.get('name') || 'Loading…');
   var color    = qs.get('color') || '#4a9eed';
 
@@ -161,6 +161,6 @@ body.ejs-ready #game > * { visibility: visible; }
 }());
 </script>
 
-<script src="emu/data/loader.js"></script>
+<script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
 </body>
 </html>

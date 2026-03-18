@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1a1d26">
-<title>Controller</title>
-
+<meta name="theme-color" content="#08080f">
+<title>RetroHub — Controller</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -19,8 +18,6 @@
 html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg2);
   font-family:'Space Mono',monospace;color:var(--text);
   touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-
-/* pixel grid bg */
 html::before{content:'';position:fixed;inset:0;pointer-events:none;
   background-image:linear-gradient(rgba(0,255,200,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,200,.02) 1px,transparent 1px);
   background-size:20px 20px;z-index:0}
@@ -29,21 +26,57 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 .view{position:fixed;inset:0;transition:opacity .18s,transform .18s;z-index:1}
 .view.off{opacity:0;transform:scale(.98);pointer-events:none}
 
+/* ── RECONNECT OVERLAY ── */
+#v-reconnect{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;background:rgba(8,8,15,.95);z-index:50}
+.rc-spinner{width:36px;height:36px;border:3px solid var(--b2);border-top-color:var(--cx);animation:spin .7s steps(8) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rc-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--white);letter-spacing:2px}
+.rc-sub{font-family:'VT323',monospace;font-size:16px;color:var(--t2);letter-spacing:2px;text-align:center;max-width:260px;line-height:1.6}
+.rc-leave{margin-top:8px;padding:8px 14px;background:transparent;border:1px solid var(--cr);
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--cr);cursor:pointer;letter-spacing:1px}
+.rc-leave:active{background:rgba(255,68,68,.1)}
+
+/* ── SESSION ENDED ── */
+#v-ended{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;background:var(--bg2);z-index:50}
+.ended-icon{font-size:2.8rem;animation:wbp 2s steps(2) infinite}
+@keyframes wbp{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.ended-title{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--white);letter-spacing:2px}
+.ended-sub{font-family:'VT323',monospace;font-size:16px;color:var(--t2);letter-spacing:2px;text-align:center;max-width:240px;line-height:1.6}
+.ended-btn{padding:11px 18px;background:var(--cx);border:none;cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:7px;color:var(--bg);letter-spacing:1px}
+
+/* ── CONFIRM SHEET ── */
+#confirm-sheet{position:fixed;inset:0;z-index:200;display:none}
+#confirm-sheet.open{display:block}
+.cs-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.7)}
+.cs-card{position:absolute;bottom:0;left:0;right:0;background:var(--shell);
+  border-top:2px solid var(--cr);padding:16px 16px 28px;display:flex;flex-direction:column;gap:12px;
+  animation:slideup .18s ease}
+@keyframes slideup{from{transform:translateY(100%)}}
+.cs-title{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--white);text-align:center;letter-spacing:1px;line-height:1.8}
+.cs-sub{font-family:'VT323',monospace;font-size:15px;color:var(--t2);text-align:center;letter-spacing:1px;line-height:1.5}
+.cs-btns{display:flex;gap:8px}
+.cs-btn{flex:1;padding:11px;text-align:center;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;letter-spacing:1px;border:none;transition:all .1s}
+.cs-btn:active{transform:translate(1px,1px)}
+.cs-cancel{background:rgba(255,255,255,.05);border:1px solid var(--b2);color:var(--t2)}
+.cs-confirm{background:var(--cr);color:#fff}
+
 /* ── JOIN ── */
-#v-join{display:flex;align-items:center;justify-content:center;gap:24px;padding:14px;background:var(--bg2);flex-direction:column}
+#v-join{display:flex;align-items:center;justify-content:center;gap:20px;padding:14px;background:var(--bg2);flex-direction:column}
 .brand{display:flex;align-items:center;gap:10px}
-.brand-icon{width:36px;height:36px;background:var(--cx);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.brand-icon{width:34px;height:34px;background:var(--cx);display:flex;align-items:center;justify-content:center;font-size:1rem}
 .brand-text{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--cx);letter-spacing:2px}
-.brand-sub{font-family:'VT323',monospace;font-size:14px;color:var(--t3);letter-spacing:2px;margin-top:2px}
+.brand-sub{font-family:'VT323',monospace;font-size:13px;color:var(--t3);letter-spacing:2px;margin-top:2px}
 .join-card{background:var(--shell);border:2px solid var(--b2);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:220px;max-width:300px;width:100%}
-.jlbl{font-family:'Press Start 2P',monospace;font-size:6px;font-weight:800;letter-spacing:2px;color:var(--t3)}
+.jlbl{font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:2px;color:var(--t3)}
 #code-in{background:var(--inset);border:2px solid var(--b1);padding:10px 12px;width:100%;
   text-align:center;font-family:'VT323',monospace;font-size:40px;letter-spacing:10px;
   color:var(--white);outline:none;text-transform:uppercase;caret-color:var(--cx);transition:border-color .2s}
 #code-in:focus{border-color:var(--cx);box-shadow:0 0 0 1px var(--cx)}
 #btn-join{width:100%;padding:11px;background:var(--cx);border:none;cursor:pointer;
-  font-family:'Press Start 2P',monospace;font-weight:900;font-size:8px;
-  color:var(--bg);letter-spacing:1px;transition:transform .1s;position:relative}
+  font-family:'Press Start 2P',monospace;font-size:8px;color:var(--bg);letter-spacing:1px;transition:transform .1s;position:relative}
 #btn-join::after{content:'';position:absolute;bottom:-3px;left:3px;right:-3px;top:3px;background:rgba(0,200,160,.3);z-index:-1}
 #btn-join:active{transform:translate(2px,2px)}
 #btn-join:active::after{bottom:-1px;left:1px;right:-1px;top:1px}
@@ -53,12 +86,15 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 #v-nav{display:flex;flex-direction:column;background:var(--bg)}
 .top-bar{height:36px;flex-shrink:0;background:var(--bg2);border-bottom:2px solid var(--cx);
   display:flex;align-items:center;padding:0 10px;gap:8px;position:relative;z-index:2}
-.top-bar-title{font-family:'Press Start 2P',monospace;font-weight:900;font-size:7px;color:var(--white);flex:1;letter-spacing:1px}
-.pill{padding:2px 7px;font-family:'Press Start 2P',monospace;font-size:6px;font-weight:800;letter-spacing:1px}
+.top-bar-title{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--white);flex:1;letter-spacing:1px}
+.pill{padding:2px 7px;font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:1px}
 .pill.p1{background:rgba(0,255,200,.12);border:1px solid var(--cx);color:var(--cx)}
 .pill.p2{background:rgba(68,255,136,.1);border:1px solid var(--cg);color:var(--cg)}
 .room-lbl{font-family:'VT323',monospace;font-size:14px;color:var(--t3);letter-spacing:1px}
 .room-lbl b{color:var(--t2)}
+.tb-leave{padding:2px 7px;font-family:'Press Start 2P',monospace;font-size:5px;color:var(--cr);
+  border:1px solid rgba(255,68,68,.3);background:transparent;cursor:pointer;letter-spacing:1px;transition:all .1s}
+.tb-leave:active{background:rgba(255,68,68,.1)}
 .nav-body{flex:1;display:flex;align-items:stretch;overflow:hidden}
 .nav-side{width:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 5px;flex-shrink:0}
 .nav-arrow{width:36px;height:36px;background:var(--shell);border:2px solid var(--b2);
@@ -67,20 +103,18 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 .nav-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px}
 .game-card{background:var(--shell);border:2px solid var(--b2);padding:12px 16px;text-align:center;width:100%;max-width:260px}
 .gc-sys-icon{font-size:1.4rem;margin-bottom:5px}
-.gc-name{font-family:'Press Start 2P',monospace;font-weight:800;font-size:8px;color:var(--white);
+.gc-name{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--white);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.8;letter-spacing:1px}
 .gc-sys{font-family:'VT323',monospace;font-size:15px;color:var(--t3);margin-top:4px;letter-spacing:2px}
 #btn-play{width:100%;max-width:220px;padding:13px;background:var(--cg);
-  border:none;cursor:pointer;font-family:'Press Start 2P',monospace;font-weight:900;
-  font-size:9px;color:var(--bg);letter-spacing:1px;
+  border:none;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:9px;color:var(--bg);letter-spacing:1px;
   animation:gp 2s ease-in-out infinite;transition:transform .1s;position:relative}
 #btn-play::after{content:'';position:absolute;bottom:-4px;left:4px;right:-4px;top:4px;background:rgba(68,255,136,.25);z-index:-1}
 @keyframes gp{0%,100%{box-shadow:0 0 0 0 rgba(68,255,136,.4)}50%{box-shadow:0 0 0 6px rgba(68,255,136,0)}}
 #btn-play:active{transform:translate(2px,2px);animation:none}
 #btn-play:active::after{bottom:-2px;left:2px;right:-2px;top:2px}
 #btn-shop{width:100%;max-width:220px;padding:10px;background:var(--cy);
-  border:none;cursor:pointer;font-family:'Press Start 2P',monospace;font-weight:900;
-  font-size:7px;color:var(--bg);letter-spacing:1px;transition:transform .1s;position:relative}
+  border:none;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--bg);letter-spacing:1px;transition:transform .1s;position:relative}
 #btn-shop::after{content:'';position:absolute;bottom:-3px;left:3px;right:-3px;top:3px;background:rgba(255,230,0,.2);z-index:-1}
 #btn-shop:active{transform:translate(2px,2px)}
 #btn-shop:active::after{bottom:-1px;left:1px;right:-1px;top:1px}
@@ -89,7 +123,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 #v-pad{display:flex;flex-direction:column;background:var(--bg2)}
 .pad-bar{height:30px;flex-shrink:0;background:var(--bg2);border-bottom:2px solid var(--cx);
   display:flex;align-items:center;padding:0 8px;gap:6px}
-.pad-bar-name{font-family:'Press Start 2P',monospace;font-weight:800;font-size:6px;color:var(--white);flex:1;
+.pad-bar-name{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--white);flex:1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:1px}
 .sm-btn{padding:2px 7px;cursor:pointer;background:rgba(255,255,255,.04);
   border:1px solid var(--b1);font-family:'Press Start 2P',monospace;font-size:5px;color:var(--t2);
@@ -103,45 +137,28 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 /* ── BUTTON BASE ── */
 .pb{position:absolute;display:flex;align-items:center;justify-content:center;
   font-family:'Press Start 2P',monospace;font-weight:900;cursor:pointer;
-  transition:transform .06s,filter .06s;
-  -webkit-user-select:none;user-select:none;touch-action:none;
+  transition:transform .06s,filter .06s;-webkit-user-select:none;user-select:none;touch-action:none;
   font-size:7px;letter-spacing:0}
 .pb:active,.pb.pr{transform:scale(.82)!important;filter:brightness(2)}
-
-/* Square pixel buttons — NO border-radius anywhere */
 .pb-face{background:var(--shell);border:2px solid transparent}
 .pb-face:active,.pb-face.pr{background:rgba(255,255,255,.06);box-shadow:0 0 12px currentColor}
-
 .pb-dp{background:var(--shell2);border:1px solid var(--b2);font-size:10px;color:var(--t2)}
 .pb-dp:active,.pb-dp.pr{background:rgba(0,255,200,.18);border-color:var(--cx);color:var(--cx);box-shadow:0 0 8px rgba(0,255,200,.4)}
-
-.pb-analog{background:var(--inset);border:2px solid var(--b2);
-  box-shadow:inset 0 3px 10px rgba(0,0,0,.5)}
+.pb-analog{background:var(--inset);border:2px solid var(--b2);box-shadow:inset 0 3px 10px rgba(0,0,0,.5)}
 .pb-analog:active,.pb-analog.live{border-color:rgba(0,255,200,.5)}
-.analog-nub{position:absolute;top:50%;left:50%;
-  background:radial-gradient(circle at 38% 38%,#2a3050,#0e1020);
-  border:2px solid rgba(255,255,255,.12);box-shadow:0 3px 8px rgba(0,0,0,.55);
-  pointer-events:none;transform:translate(-50%,-50%)}
+.analog-nub{position:absolute;top:50%;left:50%;background:radial-gradient(circle at 38% 38%,#2a3050,#0e1020);
+  border:2px solid rgba(255,255,255,.12);box-shadow:0 3px 8px rgba(0,0,0,.55);pointer-events:none;transform:translate(-50%,-50%)}
 .pb-analog.live .analog-nub{border-color:rgba(0,255,200,.5)}
-
-.pb-sh{background:var(--shell2);border:1px solid var(--b2);
-  font-size:5px;color:var(--t2);letter-spacing:1px}
+.pb-sh{background:var(--shell2);border:1px solid var(--b2);font-size:5px;color:var(--t2);letter-spacing:1px}
 .pb-sh:active,.pb-sh.pr{background:rgba(0,255,200,.18);border-color:var(--cx);color:var(--cx)}
-
-.pb-sys{background:var(--shell);border:1px solid var(--b2);
-  font-size:5px;color:var(--t2);letter-spacing:1px}
+.pb-sys{background:var(--shell);border:1px solid var(--b2);font-size:5px;color:var(--t2);letter-spacing:1px}
 .pb-sys.go{border-color:rgba(0,255,200,.4);color:var(--cx)}
 .pb-sys:active,.pb-sys.pr{background:rgba(255,255,255,.06)}
 .pb-sys.go:active,.pb-sys.go.pr{background:rgba(0,255,200,.15)}
-
-.pb-home{background:radial-gradient(circle,#1a2040,#0a0e20);
-  border:1px solid rgba(255,255,255,.1);font-size:7px;color:var(--t3)}
+.pb-home{background:radial-gradient(circle,#1a2040,#0a0e20);border:1px solid rgba(255,255,255,.1);font-size:7px;color:var(--t3)}
 .pb-home:active,.pb-home.pr{border-color:var(--cx);box-shadow:0 0 8px rgba(0,255,200,.3)}
-
 .pb-cp{background:var(--shell);border:1px solid rgba(255,230,0,.4);font-size:7px;color:#ffe600}
 .pb-cp:active,.pb-cp.pr{background:rgba(255,230,0,.15)}
-
-/* Pixel button colour themes */
 .c-tri{border-color:rgba(68,255,136,.5)!important;color:#44ff88!important}
 .c-sq{border-color:rgba(200,100,255,.5)!important;color:#cc44ff!important}
 .c-cross{border-color:rgba(100,160,255,.5)!important;color:#6699ff!important}
@@ -159,19 +176,13 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 
 /* ── EDIT MODE ── */
 #pad-canvas.edit-mode .pb{outline:1px dashed rgba(0,255,200,.6)!important;outline-offset:2px;transition:none!important}
-#pad-canvas.edit-mode .pb:active,
-#pad-canvas.edit-mode .pb.pr{transform:none!important;filter:none!important;box-shadow:none!important}
+#pad-canvas.edit-mode .pb:active,#pad-canvas.edit-mode .pb.pr{transform:none!important;filter:none!important;box-shadow:none!important}
 .edit-handle{position:absolute;top:-1px;left:-1px;right:-1px;bottom:-1px;z-index:5;cursor:grab;touch-action:none;background:rgba(0,255,200,.06)}
 .edit-handle:active{cursor:grabbing}
 .pb.dragging .edit-handle{background:rgba(0,255,200,.15);outline:1px solid var(--cx)}
-.resize-handle{position:absolute;bottom:-6px;right:-6px;width:18px;height:18px;
-  background:var(--cx);z-index:6;cursor:nwse-resize;touch-action:none;
-  display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--bg)}
-
-/* Edit menu */
+.resize-handle{position:absolute;bottom:-6px;right:-6px;width:18px;height:18px;background:var(--cx);z-index:6;cursor:nwse-resize;touch-action:none;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--bg)}
 #edit-menu{position:fixed;z-index:300;background:var(--shell);border:2px solid var(--b2);
-  padding:3px;display:flex;flex-direction:column;gap:1px;
-  box-shadow:4px 4px 0 rgba(0,0,0,.5);min-width:130px}
+  padding:3px;display:flex;flex-direction:column;gap:1px;box-shadow:4px 4px 0 rgba(0,0,0,.5);min-width:130px}
 #edit-menu.hidden{display:none}
 .emenu-item{padding:7px 10px;font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text);cursor:pointer;letter-spacing:1px;transition:background .08s}
 .emenu-item:active{background:rgba(255,255,255,.06)}
@@ -183,35 +194,29 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 #remap-sheet.open{display:block}
 .sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.7)}
 .sheet-card{position:absolute;bottom:0;left:0;right:0;background:var(--shell);
-  border-top:2px solid var(--cx);padding:14px 14px 24px;display:flex;flex-direction:column;gap:12px;
-  animation:slideup .18s ease}
-@keyframes slideup{from{transform:translateY(100%)}}
-.sheet-title{font-family:'Press Start 2P',monospace;font-weight:900;font-size:8px;color:var(--white);text-align:center;letter-spacing:1px}
+  border-top:2px solid var(--cx);padding:14px 14px 24px;display:flex;flex-direction:column;gap:12px;animation:slideup .18s ease}
+.sheet-title{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--white);text-align:center;letter-spacing:1px}
 .sheet-row{display:flex;flex-direction:column;gap:4px}
-.sheet-lbl{font-family:'Press Start 2P',monospace;font-size:6px;font-weight:800;letter-spacing:1px;color:var(--t3)}
+.sheet-lbl{font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:1px;color:var(--t3)}
 .sheet-in{background:var(--inset);border:2px solid var(--b1);padding:8px 10px;color:var(--white);
-  font-family:'VT323',monospace;font-weight:700;font-size:18px;outline:none;width:100%;letter-spacing:1px;transition:border-color .15s}
+  font-family:'VT323',monospace;font-size:18px;outline:none;width:100%;letter-spacing:1px;transition:border-color .15s}
 .sheet-in:focus{border-color:var(--cx)}
 .sheet-key-row{display:flex;gap:6px;align-items:stretch}
 .sheet-key{flex:1}
 .sheet-capture{padding:0 10px;background:rgba(0,255,200,.1);border:2px solid rgba(0,255,200,.3);
-  display:flex;align-items:center;font-family:'Press Start 2P',monospace;font-size:5px;
-  color:var(--cx);cursor:pointer;white-space:nowrap;letter-spacing:1px;transition:all .1s}
+  display:flex;align-items:center;font-family:'Press Start 2P',monospace;font-size:5px;color:var(--cx);cursor:pointer;white-space:nowrap;letter-spacing:1px}
 .sheet-capture:active{background:rgba(0,255,200,.2)}
-.sheet-capture.capturing{background:rgba(0,255,200,.18);color:#fff;animation:pulse .6s step-end infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sheet-capture.capturing{background:rgba(0,255,200,.18);color:#fff;animation:blink .6s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 .sheet-row-toggle{flex-direction:row;align-items:center;justify-content:space-between}
 .toggle-wrap{display:flex;align-items:center}
 .toggle-cb{display:none}
-.toggle-track{width:38px;height:20px;background:rgba(255,255,255,.08);
-  border:1px solid var(--b2);position:relative;cursor:pointer;transition:background .2s;display:block}
+.toggle-track{width:38px;height:20px;background:rgba(255,255,255,.08);border:1px solid var(--b2);position:relative;cursor:pointer;transition:background .2s;display:block}
 .toggle-cb:checked+.toggle-track{background:var(--cx);border-color:var(--cx)}
-.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;
-  background:#fff;transition:transform .2s;display:block}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;transition:transform .2s;display:block}
 .toggle-cb:checked+.toggle-track .toggle-thumb{transform:translateX(18px)}
 .sheet-actions{display:flex;gap:7px}
-.sheet-btn{flex:1;padding:10px;text-align:center;
-  font-family:'Press Start 2P',monospace;font-weight:900;font-size:7px;cursor:pointer;transition:all .1s;letter-spacing:1px}
+.sheet-btn{flex:1;padding:10px;text-align:center;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;transition:all .1s;letter-spacing:1px}
 .sheet-btn:active{transform:translate(1px,1px)}
 .sheet-cancel{background:rgba(255,255,255,.04);border:1px solid var(--b2);color:var(--t2)}
 .sheet-save{background:var(--cx);border:none;color:var(--bg);position:relative}
@@ -221,16 +226,14 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 #v-wait{display:flex;align-items:center;justify-content:center;background:var(--bg2)}
 .wait2-body{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:24px}
 .wait2-icon{font-size:2.5rem;animation:wbp 1.5s steps(2) infinite}
-@keyframes wbp{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.wait2-title{font-family:'Press Start 2P',monospace;font-weight:900;font-size:11px;color:var(--white);letter-spacing:2px}
+.wait2-title{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--white);letter-spacing:2px}
 .wait2-sub{font-family:'VT323',monospace;font-size:16px;color:var(--t2);max-width:200px;line-height:1.6;letter-spacing:2px}
 
 /* ── TOASTS ── */
 #toasts{position:fixed;top:38px;left:50%;transform:translateX(-50%);z-index:9000;
   display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;width:88%;max-width:300px}
-.toast{background:var(--shell);border:1px solid var(--b2);
-  padding:5px 10px;font-family:'VT323',monospace;font-size:14px;color:var(--text);
-  text-align:center;opacity:0;letter-spacing:1px;
+.toast{background:var(--shell);border:1px solid var(--b2);padding:5px 10px;
+  font-family:'VT323',monospace;font-size:14px;color:var(--text);text-align:center;opacity:0;letter-spacing:1px;
   animation:tin .15s ease forwards,tout .2s ease 2.4s forwards}
 .toast.w{color:var(--cr)}
 @keyframes tin{to{opacity:1}}
@@ -239,17 +242,46 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 </head>
 <body>
 
+<!-- RECONNECT OVERLAY -->
+<div class="view off" id="v-reconnect">
+  <div class="rc-spinner"></div>
+  <div class="rc-title">RECONNECTING...</div>
+  <div class="rc-sub" id="rc-sub">Connection lost. Trying to reconnect...</div>
+  <button class="rc-leave" id="rc-leave-btn">LEAVE SESSION</button>
+</div>
+
+<!-- SESSION ENDED -->
+<div class="view off" id="v-ended">
+  <div class="ended-icon">🔌</div>
+  <div class="ended-title">SESSION ENDED</div>
+  <div class="ended-sub" id="ended-sub">The host closed the session.</div>
+  <button class="ended-btn" id="ended-join-btn">JOIN NEW GAME</button>
+</div>
+
+<!-- CONFIRM SHEET -->
+<div id="confirm-sheet">
+  <div class="cs-backdrop" id="cs-backdrop"></div>
+  <div class="cs-card">
+    <div class="cs-title" id="cs-title">LEAVE SESSION?</div>
+    <div class="cs-sub" id="cs-sub">You will be disconnected from the current game.</div>
+    <div class="cs-btns">
+      <div class="cs-btn cs-cancel" id="cs-cancel">STAY</div>
+      <div class="cs-btn cs-confirm" id="cs-confirm">LEAVE</div>
+    </div>
+  </div>
+</div>
+
 <!-- JOIN -->
 <div class="view" id="v-join">
   <div class="brand">
     <div class="brand-icon">🕹</div>
-    <div><div class="brand-text">Game Hub</div><div class="brand-sub">Controller</div></div>
+    <div><div class="brand-text">RETRO HUB</div><div class="brand-sub">CONTROLLER</div></div>
   </div>
   <div class="join-card">
     <div class="jlbl">ROOM CODE FROM TV</div>
     <input id="code-in" type="text" maxlength="4" placeholder="XXXX"
            autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text">
-    <button id="btn-join">Join Game</button>
+    <button id="btn-join">JOIN GAME</button>
     <div class="jerr" id="jerr"></div>
   </div>
 </div>
@@ -257,9 +289,10 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 <!-- NAV -->
 <div class="view off" id="v-nav">
   <div class="top-bar">
-    <div class="top-bar-title">Library</div>
-    <div class="room-lbl">Room: <b id="nav-rc">----</b></div>
+    <div class="top-bar-title">LIBRARY</div>
+    <div class="room-lbl">ROOM: <b id="nav-rc">----</b></div>
     <div class="pill p1" id="nav-pill">P1</div>
+    <button class="tb-leave" id="nav-leave-btn">✕ LEAVE</button>
   </div>
   <div class="nav-body">
     <div class="nav-side">
@@ -270,7 +303,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
       <div class="game-card">
         <div class="gc-sys-icon" id="gc-icon">🎮</div>
         <div class="gc-name" id="gc-name">No game selected</div>
-        <div class="gc-sys"  id="gc-sys">—</div>
+        <div class="gc-sys" id="gc-sys">—</div>
       </div>
       <button id="btn-play">▶ &nbsp;Start Game</button>
       <button id="btn-shop">🛒 &nbsp;Game Shop</button>
@@ -285,7 +318,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
     <div class="pad-bar-name" id="pad-name">Playing</div>
     <div class="pill p1" id="pad-pill">P1</div>
     <div class="sm-btn" id="btn-edit">⚙ Edit</div>
-    <div class="sm-btn" id="btn-back">← Back</div>
+    <div class="sm-btn" id="btn-back">← Stop</div>
   </div>
   <div id="pad-canvas"></div>
 </div>
@@ -303,45 +336,43 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
   <div class="sheet-backdrop" id="sheet-backdrop"></div>
   <div class="sheet-card">
     <div class="sheet-title" id="sheet-title">Edit Button</div>
-    <div class="sheet-row">
-      <div class="sheet-lbl">LABEL</div>
-      <input class="sheet-in" id="remap-label" type="text" maxlength="8" autocomplete="off">
-    </div>
-    <div class="sheet-row">
-      <div class="sheet-lbl">KEY BINDING</div>
+    <div class="sheet-row"><div class="sheet-lbl">LABEL</div>
+      <input class="sheet-in" id="remap-label" type="text" maxlength="8" autocomplete="off"></div>
+    <div class="sheet-row"><div class="sheet-lbl">KEY BINDING</div>
       <div class="sheet-key-row">
         <input class="sheet-in sheet-key" id="remap-key" type="text" maxlength="24" autocomplete="off" placeholder="e.g. KeyA, Enter, ArrowUp">
         <div class="sheet-capture" id="btn-capture">Capture</div>
-      </div>
-    </div>
-    <div class="sheet-row sheet-row-toggle">
-      <div class="sheet-lbl">VISIBLE</div>
-      <div class="toggle-wrap">
-        <input type="checkbox" id="remap-visible" class="toggle-cb">
-        <label for="remap-visible" class="toggle-track"><span class="toggle-thumb"></span></label>
-      </div>
-    </div>
+      </div></div>
+    <div class="sheet-row sheet-row-toggle"><div class="sheet-lbl">VISIBLE</div>
+      <div class="toggle-wrap"><input type="checkbox" id="remap-visible" class="toggle-cb">
+        <label for="remap-visible" class="toggle-track"><span class="toggle-thumb"></span></label></div></div>
     <div class="sheet-actions">
       <div class="sheet-btn sheet-cancel" id="btn-sheet-cancel">Cancel</div>
-      <div class="sheet-btn sheet-save"   id="btn-sheet-save">Save</div>
+      <div class="sheet-btn sheet-save" id="btn-sheet-save">Save</div>
     </div>
   </div>
 </div>
 
-<!-- P2 WAITING VIEW -->
+<!-- P2 WAIT -->
 <div class="view off" id="v-wait">
   <div class="wait2-body">
     <div class="wait2-icon">🎮</div>
-    <div class="wait2-title">Player 2</div>
-    <div class="wait2-sub">Waiting for P1 to start a game…</div>
+    <div class="wait2-title">PLAYER 2</div>
+    <div class="wait2-sub">Waiting for P1 to start a game...</div>
     <div class="pill p2" id="wait2-pill" style="margin-top:6px">P2</div>
+    <button class="tb-leave" id="wait-leave-btn" style="margin-top:12px">✕ LEAVE SESSION</button>
   </div>
 </div>
 
 <div id="toasts"></div>
-
 <script src="/socket.io/socket.io.js"></script>
 <script>
+// ── Session keys ───────────────────────────────────────────────────────────
+const SS_KEY = 'rh_ctrl_session'; // stores {roomCode, playerId}
+function saveSession(roomCode, playerId) { sessionStorage.setItem(SS_KEY, JSON.stringify({roomCode,playerId})); }
+function loadSession() { try{return JSON.parse(sessionStorage.getItem(SS_KEY)||'null');}catch{return null;} }
+function clearSession() { sessionStorage.removeItem(SS_KEY); }
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // LAYOUTS
 // gap=10 gives the d-pad arms clear visual separation
@@ -723,13 +754,17 @@ function wireInput(canvas){
   if(dpData.length===4)buildDpadZone(dpData.map(d=>({id:d.id})),canvas);
 }
 
+// Pre-allocated payload — avoids object allocation on every button press
+const _inp = {action:'keydown',key:'',code:''};
 function btnDown(el){
   el.classList.add('pr');vib(14);
-  socket.emit('game:input',{action:'keydown',key:el.dataset.key,code:el.dataset.code});
+  _inp.action='keydown';_inp.key=el.dataset.key;_inp.code=el.dataset.code;
+  socket.volatile.emit('game:input',_inp);
 }
 function btnUp(el){
   el.classList.remove('pr');
-  socket.emit('game:input',{action:'keyup',key:el.dataset.key,code:el.dataset.code});
+  _inp.action='keyup';_inp.key=el.dataset.key;_inp.code=el.dataset.code;
+  socket.volatile.emit('game:input',_inp);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -765,7 +800,7 @@ function moveStick(st,nub,zone,keys,dx,dy){
 }
 function stickEmit(st,keys,dir,on){
   if(on===st.pressed[dir])return;st.pressed[dir]=on;
-  const k=keys[dir];socket.emit('game:input',{action:on?'keydown':'keyup',key:k,code:k});if(on)vib(8);
+  const k=keys[dir];socket.volatile.emit('game:input',{action:on?'keydown':'keyup',key:k,code:k});if(on)vib(8);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -889,67 +924,199 @@ function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.togg
 // ═══════════════════════════════════════════════════════════════════════════════
 // SOCKET & STATE
 // ═══════════════════════════════════════════════════════════════════════════════
-let playerId=null,currentGame=null;
+let playerId=null, currentGame=null, roomCode=null;
+let isReconnecting=false;
+
 const socket=io({transports:['polling','websocket'],upgrade:true});
 
-socket.on('connect',()=>show('v-join'));
-socket.on('disconnect',()=>{});
+// ── Confirm sheet ──────────────────────────────────────────────────────────
+let confirmCb=null;
+function showConfirm(title,sub,cb){
+  document.getElementById('cs-title').textContent=title;
+  document.getElementById('cs-sub').textContent=sub;
+  confirmCb=cb;
+  document.getElementById('confirm-sheet').classList.add('open');
+}
+function hideConfirm(){ document.getElementById('confirm-sheet').classList.remove('open'); confirmCb=null; }
+document.getElementById('cs-cancel').addEventListener('pointerdown',e=>{e.preventDefault();hideConfirm();});
+document.getElementById('cs-confirm').addEventListener('pointerdown',e=>{e.preventDefault();hideConfirm();if(confirmCb){confirmCb();confirmCb=null;}});
+document.getElementById('cs-backdrop').addEventListener('pointerdown',e=>{e.preventDefault();hideConfirm();});
 
-socket.on('room:joined',({playerId:pid,roomCode:rc})=>{
-  playerId=pid;
+// ── Leave session ──────────────────────────────────────────────────────────
+function doLeave(){
+  clearSession();
+  socket.emit('controller:leave');
+  playerId=null; currentGame=null; roomCode=null;
+  show('v-join');
+  document.getElementById('jerr').textContent='';
+}
+function promptLeave(){
+  showConfirm('LEAVE SESSION?','You will be disconnected. P1 can still play.',()=>doLeave());
+}
+document.getElementById('nav-leave-btn').addEventListener('pointerdown',e=>{e.preventDefault();promptLeave();});
+document.getElementById('wait-leave-btn').addEventListener('pointerdown',e=>{e.preventDefault();promptLeave();});
+document.getElementById('rc-leave-btn').addEventListener('pointerdown',e=>{e.preventDefault();showConfirm('LEAVE SESSION?','The session may still be active. You can rejoin later.',()=>{doLeave();});});
+document.getElementById('ended-join-btn').addEventListener('pointerdown',e=>{e.preventDefault();show('v-join');});
+
+// ── Connect / reconnect ────────────────────────────────────────────────────
+socket.on('connect', ()=>{
+  const sess = loadSession();
+  if (sess && sess.roomCode && sess.playerId) {
+    // Try to silently rejoin
+    isReconnecting=true;
+    show('v-reconnect');
+    document.getElementById('rc-sub').textContent='REJOINING ROOM '+sess.roomCode+'...';
+    socket.emit('controller:join',{roomCode:sess.roomCode, existingPlayerId:sess.playerId});
+    // Fallback: if no response in 5s, show join screen
+    setTimeout(()=>{
+      if(isReconnecting){
+        isReconnecting=false;
+        clearSession();
+        show('v-join');
+        toast('COULD NOT REJOIN — ENTER CODE',true);
+      }
+    },5000);
+  } else {
+    show('v-join');
+  }
+});
+
+socket.on('disconnect',()=>{
+  if(playerId){
+    show('v-reconnect');
+    document.getElementById('rc-sub').textContent='CONNECTION LOST — RECONNECTING...';
+  }
+});
+
+socket.on('reconnect',()=>{
+  // Socket.io auto-reconnects — on reconnect we re-join
+  const sess=loadSession();
+  if(sess){
+    socket.emit('controller:join',{roomCode:sess.roomCode,existingPlayerId:sess.playerId});
+  }
+});
+
+socket.on('room:joined',({playerId:pid,roomCode:rc,reconnected,state})=>{
+  isReconnecting=false;
+  playerId=pid; roomCode=rc;
+  saveSession(rc,pid);
   const cls=pid===2?'p2':'p1';
   document.getElementById('nav-rc').textContent=rc;
-  ['nav-pill','pad-pill'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=`P${pid}`;el.className=`pill ${cls}`;}});
-  toast(`Joined as Player ${pid}`);vib([28,12,28]);
-  if(pid===2)show('v-wait');else show('v-nav');
+  ['nav-pill','pad-pill'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.textContent=`P${pid}`;el.className=`pill ${cls}`;}
+  });
+  if(!reconnected) toast(`JOINED AS PLAYER ${pid}`);
+  else toast(`REJOINED ROOM ${rc}`);
+  vib([28,12,28]);
+
+  // Restore state if rejoining mid-session
+  if(state){
+    if(state.lastSelection){
+      currentGame=state.lastSelection.game||state.lastSelection;
+      if(currentGame){
+        document.getElementById('gc-name').textContent=currentGame.name||'';
+        document.getElementById('gc-sys').textContent=SYSINFO[currentGame.core]||currentGame.core||'';
+        document.getElementById('gc-icon').textContent=SYSICONS[currentGame.core]||'🎮';
+      }
+    }
+    if(state.gameActive&&currentGame){
+      // Rejoin mid-game → go straight to pad
+      document.getElementById('pad-name').textContent=currentGame.name||'';
+      show('v-pad');
+      requestAnimationFrame(()=>buildPad(currentGame.core));
+      return;
+    }
+  }
+  if(pid===2) show('v-wait'); else show('v-nav');
 });
-socket.on('room:error',({message})=>{document.getElementById('jerr').textContent=message;vib([50,20,50]);});
+
+socket.on('room:error',({message})=>{
+  isReconnecting=false;
+  clearSession();
+  document.getElementById('jerr').textContent=message;
+  show('v-join');
+  vib([50,20,50]);
+});
+
+socket.on('room:left',()=>{
+  show('v-join');
+});
+
+// ── TV screen status ───────────────────────────────────────────────────────
+socket.on('screen:disconnected',()=>{
+  toast('TV DISCONNECTED — WAITING...',true);
+  // Don't kick phone — just notify. Session still alive.
+});
+socket.on('screen:reconnected',()=>{
+  toast('TV RECONNECTED');
+});
+
+// ── Session ended by host ──────────────────────────────────────────────────
+socket.on('session:ended',({reason})=>{
+  clearSession();
+  playerId=null; currentGame=null; roomCode=null;
+  if(editMode)exitEditMode();
+  document.getElementById('ended-sub').textContent=
+    reason==='host_closed'?'The host closed the session.':'The session ended unexpectedly.';
+  show('v-ended');
+});
+
+// ── Game selection ─────────────────────────────────────────────────────────
 socket.on('hub:selection',({game})=>{
-  currentGame=game;if(!game)return;
+  currentGame=game; if(!game) return;
   document.getElementById('gc-name').textContent=game.name;
   document.getElementById('gc-sys').textContent=SYSINFO[game.core]||game.core;
   document.getElementById('gc-icon').textContent=SYSICONS[game.core]||'🎮';
 });
-socket.on('nav:start',({initiatorPlayerId}={})=>{
-  if(!currentGame)return;
+
+// ── Game started ───────────────────────────────────────────────────────────
+socket.on('game:started',game=>{
+  if(game) currentGame=game;
+  if(!currentGame) return;
   document.getElementById('pad-name').textContent=currentGame.name;
   show('v-pad');
-  // show first so canvas has real dimensions, then build
   requestAnimationFrame(()=>buildPad(currentGame.core));
 });
-socket.on('game:stop',()=>{
-  if(editMode)exitEditMode();
-  if(playerId===2)show('v-wait');else show('v-nav');
+
+socket.on('nav:start',({initiatorPlayerId}={})=>{
+  if(!currentGame) return;
+  document.getElementById('pad-name').textContent=currentGame.name;
+  show('v-pad');
+  requestAnimationFrame(()=>buildPad(currentGame.core));
 });
 
+socket.on('game:stop',()=>{
+  if(editMode)exitEditMode();
+  if(playerId===2) show('v-wait'); else show('v-nav');
+});
+
+// ── Nav buttons ────────────────────────────────────────────────────────────
 document.getElementById('btn-join').addEventListener('click',()=>{
   const code=document.getElementById('code-in').value.trim().toUpperCase();
   document.getElementById('jerr').textContent='';
-  if(code.length<2){document.getElementById('jerr').textContent='Enter the room code';return;}
+  if(code.length<2){document.getElementById('jerr').textContent='Enter room code';return;}
   socket.emit('controller:join',{roomCode:code});vib(18);
 });
 document.getElementById('code-in').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btn-join').click();});
 document.getElementById('btn-prev').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib(20);socket.emit('nav:prev');});
-document.getElementById('btn-shop').addEventListener('pointerdown',e=>{
-  if(playerId!==1)return;
-  e.preventDefault();vib([20,10,20]);
-  socket.emit('open:shop');
-  toast('OPENING SHOP ON TV');
-});
 document.getElementById('btn-next').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib(20);socket.emit('nav:next');});
+document.getElementById('btn-shop').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib([20,10,20]);socket.emit('open:shop');toast('OPENING SHOP ON TV');});
 document.getElementById('btn-play').addEventListener('pointerdown',e=>{
   if(playerId!==1)return;e.preventDefault();vib([32,12,32]);socket.emit('nav:start',{});
   if(currentGame){document.getElementById('pad-name').textContent=currentGame.name;show('v-pad');requestAnimationFrame(()=>buildPad(currentGame.core));}
 });
 document.getElementById('btn-back').addEventListener('pointerdown',e=>{
-  e.preventDefault();vib(32);if(editMode)exitEditMode();
-  socket.emit('game:stop');if(playerId===2)show('v-wait');else show('v-nav');
+  e.preventDefault();
+  showConfirm('STOP GAME?','This stops the game for everyone.',()=>{
+    vib(32);if(editMode)exitEditMode();
+    socket.emit('game:stop');
+    if(playerId===2)show('v-wait');else show('v-nav');
+  });
 });
 
 document.addEventListener('contextmenu',e=>e.preventDefault());
 if('wakeLock'in navigator)navigator.wakeLock.request('screen').catch(()=>{});
-
-// Fullscreen + landscape lock on first touch
 (function(){
   function tryFS(){
     const el=document.documentElement;
