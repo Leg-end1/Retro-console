@@ -311,6 +311,7 @@ io.on('connection', socket => {
   // ── Controller → screen: navigation ──────────────────────────────────────
   socket.on('nav:prev',  () => relayToScreen('nav:prev'));
   socket.on('nav:next',  () => relayToScreen('nav:next'));
+  socket.on('open:shop', () => relayToScreen('open:shop'));
 
   // ── Controller → screen: start game ──────────────────────────────────────
   socket.on('nav:start', () => {

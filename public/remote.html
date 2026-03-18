@@ -78,6 +78,12 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 @keyframes gp{0%,100%{box-shadow:0 0 0 0 rgba(68,255,136,.4)}50%{box-shadow:0 0 0 6px rgba(68,255,136,0)}}
 #btn-play:active{transform:translate(2px,2px);animation:none}
 #btn-play:active::after{bottom:-2px;left:2px;right:-2px;top:2px}
+#btn-shop{width:100%;max-width:220px;padding:10px;background:var(--cy);
+  border:none;cursor:pointer;font-family:'Press Start 2P',monospace;font-weight:900;
+  font-size:7px;color:var(--bg);letter-spacing:1px;transition:transform .1s;position:relative}
+#btn-shop::after{content:'';position:absolute;bottom:-3px;left:3px;right:-3px;top:3px;background:rgba(255,230,0,.2);z-index:-1}
+#btn-shop:active{transform:translate(2px,2px)}
+#btn-shop:active::after{bottom:-1px;left:1px;right:-1px;top:1px}
 
 /* ── PAD VIEW ── */
 #v-pad{display:flex;flex-direction:column;background:var(--bg2)}
@@ -267,6 +273,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
         <div class="gc-sys"  id="gc-sys">—</div>
       </div>
       <button id="btn-play">▶ &nbsp;Start Game</button>
+      <button id="btn-shop">🛒 &nbsp;Game Shop</button>
     </div>
     <div class="nav-side"></div>
   </div>
@@ -923,6 +930,12 @@ document.getElementById('btn-join').addEventListener('click',()=>{
 });
 document.getElementById('code-in').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btn-join').click();});
 document.getElementById('btn-prev').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib(20);socket.emit('nav:prev');});
+document.getElementById('btn-shop').addEventListener('pointerdown',e=>{
+  if(playerId!==1)return;
+  e.preventDefault();vib([20,10,20]);
+  socket.emit('open:shop');
+  toast('OPENING SHOP ON TV');
+});
 document.getElementById('btn-next').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib(20);socket.emit('nav:next');});
 document.getElementById('btn-play').addEventListener('pointerdown',e=>{
   if(playerId!==1)return;e.preventDefault();vib([32,12,32]);socket.emit('nav:start',{});

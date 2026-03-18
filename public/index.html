@@ -834,6 +834,7 @@ socket.on('game:input', ({ action, key, code, playerId }) => {
   else               injectP1(action, key, code);
 });
 
+socket.on('open:shop', () => { window.location.href = '/shop.html'; });
 socket.on('room:error', ({ message }) => toast(message.toUpperCase(), true));
 socket.on('disconnect', () => elPpStat.textContent = 'RECONNECTING');
 </script>
