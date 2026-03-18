@@ -8,21 +8,24 @@ const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, {
   cors: { origin: '*' },
-  // Low-latency tuning for game input
   pingTimeout: 10000,
   pingInterval: 5000,
-  // Disable per-message deflate compression — adds latency, useless for tiny input events
   perMessageDeflate: false,
-  // Large buffer so bursts of rapid button presses never get dropped
   maxHttpBufferSize: 1e7,
-  // Use websocket transport only — skip the long-polling upgrade handshake
-  transports: ['websocket'],
+  // Allow both transports — polling fallback ensures connection works everywhere
+  // (pure websocket-only breaks on some proxies, Railway, and local setups)
+  transports: ['polling', 'websocket'],
 });
 
 // COEP credentialless — required for SharedArrayBuffer (EJS WebAssembly)
+// Only apply to HTML page responses — NOT to Socket.io or API routes
+// Applying these to XHR/polling requests causes HTTP 400 on Socket.io handshake
 app.use((req, res, next) => {
-  res.setHeader('Cross-Origin-Opener-Policy',   'same-origin');
-  res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+  const isPage = req.path === '/' || req.path.endsWith('.html');
+  if (isPage) {
+    res.setHeader('Cross-Origin-Opener-Policy',   'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+  }
   next();
 });
 
