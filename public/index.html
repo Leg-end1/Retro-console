@@ -425,7 +425,13 @@ body::after {
   <div class="fsp-code-wrap">
     <div class="fsp-code-lbl">ROOM CODE</div>
     <div class="fsp-code" id="fsp-code">----</div>
-    <div class="fsp-url">Phone: <b id="fsp-url">...</b>/remote.html</div>
+    <div style="display:flex;align-items:center;gap:20px;margin-top:6px">
+      <div>
+        <div class="fsp-url">Phone: <b id="fsp-url">...</b>/remote.html</div>
+        <div class="fsp-url" style="margin-top:4px;opacity:.6">OR SCAN QR CODE →</div>
+      </div>
+      <div id="fsp-qr" style="background:#fff;padding:5px;line-height:0;flex-shrink:0"></div>
+    </div>
   </div>
   <div class="fsp-press">▶ &nbsp;CLICK ANYWHERE TO START &nbsp;◀</div>
 </div>
@@ -438,7 +444,13 @@ body::after {
     <div class="wait-code-lbl">ROOM CODE</div>
     <div class="wait-code" id="wcode">----</div>
   </div>
-  <div class="wait-url">Go to: <b id="wait-url-txt">YOUR-IP:3000</b>/remote.html</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <div>
+      <div class="wait-url">Go to: <b id="wait-url-txt">YOUR-IP:3000</b>/remote.html</div>
+      <div class="wait-url" style="margin-top:6px;opacity:.6">OR SCAN QR →</div>
+    </div>
+    <div id="wait-qr" style="background:#fff;padding:6px;line-height:0"></div>
+  </div>
   <div class="wait-sub" style="color:var(--txt3)">WAITING FOR PLAYER 1...</div>
 </div>
 
@@ -456,6 +468,7 @@ body::after {
     </div>
     <div class="sep"></div>
     <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--txt3);letter-spacing:1px">LIBRARY</span>
+    <a href="/shop.html" style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--cy);letter-spacing:1px;text-decoration:none;border:1px solid rgba(255,230,0,.3);padding:4px 8px;transition:all .1s" onmouseover="this.style.borderColor='var(--cy)'" onmouseout="this.style.borderColor='rgba(255,230,0,.3)'">► SHOP</a>
     <div class="spacer"></div>
     <div class="pdots">
       <span style="font-family:'VT323',monospace;font-size:13px;color:var(--txt3);letter-spacing:1px">P1</span>
@@ -528,6 +541,7 @@ body::after {
 
 <div id="toasts"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 // ── System palette ─────────────────────────────────────────────────────────
@@ -758,10 +772,23 @@ socket.on('screen:registered', ({ roomCode }) => {
   // Show IP in prompts
   const ip = location.hostname;
   const port = location.port ? ':' + location.port : '';
+  const remoteURL = location.protocol + '//' + ip + port + '/remote.html';
   const urlEl = document.getElementById('fsp-url');
   const waitUrlEl = document.getElementById('wait-url-txt');
   if (urlEl) urlEl.textContent = ip + port;
   if (waitUrlEl) waitUrlEl.textContent = ip + port;
+  // Generate QR codes pointing to /remote.html
+  ['fsp-qr','wait-qr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || !window.QRCode) return;
+    el.innerHTML = '';
+    new QRCode(el, {
+      text: remoteURL,
+      width: 100, height: 100,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  });
   fetch('/api/games').then(r => r.json()).then(data => {
     games = data;
     buildList();
