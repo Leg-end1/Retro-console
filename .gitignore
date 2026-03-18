@@ -8,5 +8,5 @@ npm-debug.log*
 !public/games/.gitkeep
 
 # Self-hosted EmulatorJS — too large for git, document separately
-public/emu/*
+# public/emu/*
 !public/emu/.gitkeep
