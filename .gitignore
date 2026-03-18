@@ -4,7 +4,7 @@ npm-debug.log*
 .env.local
 
 # ROMs — never commit these
-public/games/*
+# public/games/*
 !public/games/.gitkeep
 
 # Self-hosted EmulatorJS — too large for git, document separately
