@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#08080f">
 <title>RetroHub — Controller</title>
+<meta name="app-version" content="2.1">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -15,15 +18,52 @@
   --cx:#00ffc8;--cy:#ffe600;--cp:#ff44cc;--cr:#ff4444;--cg:#44ff88;
   --text:#a8c4c0;--t2:#4a7a74;--t3:#2a4a46;--white:#e8f8f4;
 }
-html,body{width:100%;height:100dvh;overflow:hidden;background:var(--bg2);
+html{width:100%;height:100%;background:var(--bg2);}
+body{width:100%;height:100%;overflow:hidden;background:var(--bg2);
   font-family:'Space Mono',monospace;color:var(--text);
-  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
 html::before{content:'';position:fixed;inset:0;pointer-events:none;
   background-image:linear-gradient(rgba(0,255,200,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,200,.02) 1px,transparent 1px);
   background-size:20px 20px;z-index:0}
 
+/* ── PORTRAIT ROTATE PROMPT ── */
+#rotate-prompt{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg2);
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;pointer-events:none}
+#rotate-prompt .rp-arrow{font-size:3.5rem;animation:spin90 1.2s ease-in-out infinite}
+@keyframes spin90{0%,100%{transform:rotate(0deg)}50%{transform:rotate(90deg)}}
+#rotate-prompt .rp-txt{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--cx);
+  letter-spacing:2px;text-align:center;line-height:2.2}
+#rotate-prompt .rp-sub{font-family:'VT323',monospace;font-size:16px;color:var(--t2);letter-spacing:2px}
+@media(orientation:portrait){
+  #rotate-prompt{display:flex;pointer-events:all}
+  body>*:not(#rotate-prompt):not(#tap-start){display:none!important}
+}
+
+/* ── TAP TO START (fullscreen gate) ── */
+#tap-start{position:fixed;inset:0;z-index:9998;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  cursor:pointer;transition:opacity .3s;}
+#tap-start.gone{opacity:0;pointer-events:none;}
+.ts-logo{font-family:'Press Start 2P',monospace;font-size:clamp(12px,3vw,18px);
+  color:var(--cx);letter-spacing:3px;
+  text-shadow:0 0 20px rgba(0,255,200,.5);}
+.ts-sub{font-family:'VT323',monospace;font-size:18px;color:var(--t2);letter-spacing:3px;}
+.ts-btn{padding:16px 32px;border:2px solid var(--cx);background:rgba(0,255,200,.08);
+  animation:glow-pulse 1.5s ease-in-out infinite;cursor:pointer;}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,200,.4)}50%{box-shadow:0 0 0 8px rgba(0,255,200,0)}}
+.ts-btn-txt{font-family:'Press Start 2P',monospace;font-size:clamp(9px,2.5vw,14px);
+  color:var(--cx);letter-spacing:3px;animation:blink 1s step-end infinite;}
+.ts-hint{font-family:'VT323',monospace;font-size:14px;color:var(--t3);letter-spacing:2px;}
+
 /* ── VIEWS ── */
-.view{position:fixed;inset:0;transition:opacity .18s,transform .18s;z-index:1}
+.view{position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  /* Extend under notch/status bar */
+  top:env(safe-area-inset-top,0px);
+  left:env(safe-area-inset-left,0px);
+  right:env(safe-area-inset-right,0px);
+  bottom:env(safe-area-inset-bottom,0px);
+  transition:opacity .18s,transform .18s;z-index:1;}
 .view.off{opacity:0;transform:scale(.98);pointer-events:none}
 
 /* ── RECONNECT OVERLAY ── */
@@ -48,7 +88,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
   font-family:'Press Start 2P',monospace;font-size:7px;color:var(--bg);letter-spacing:1px}
 
 /* ── CONFIRM SHEET ── */
-#confirm-sheet{position:fixed;inset:0;z-index:200;display:none}
+#confirm-sheet{position:fixed;inset:0;z-index:99999;display:none}
 #confirm-sheet.open{display:block}
 .cs-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.7)}
 .cs-card{position:absolute;bottom:0;left:0;right:0;background:var(--shell);
@@ -122,12 +162,14 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 /* ── PAD VIEW ── */
 #v-pad{display:flex;flex-direction:column;background:var(--bg2)}
 .pad-bar{height:30px;flex-shrink:0;background:var(--bg2);border-bottom:2px solid var(--cx);
-  display:flex;align-items:center;padding:0 8px;gap:6px}
+  display:flex;align-items:center;padding:0 8px;gap:6px;
+  position:relative;z-index:10;}  /* above pad canvas overlays */
 .pad-bar-name{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--white);flex:1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:1px}
 .sm-btn{padding:2px 7px;cursor:pointer;background:rgba(255,255,255,.04);
   border:1px solid var(--b1);font-family:'Press Start 2P',monospace;font-size:5px;color:var(--t2);
-  letter-spacing:1px;transition:all .1s}
+  letter-spacing:1px;transition:all .1s;
+  touch-action:auto;-webkit-user-select:none;position:relative;z-index:10;}
 .sm-btn:active{background:rgba(0,255,200,.1)}
 .sm-btn.active-mode{background:rgba(0,255,200,.12);border-color:var(--cx);color:var(--cx)}
 
@@ -241,6 +283,23 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 </style>
 </head>
 <body>
+
+<!-- ROTATE PROMPT (portrait) -->
+<div id="rotate-prompt">
+  <div class="rp-arrow">📱</div>
+  <div class="rp-txt">ROTATE YOUR PHONE</div>
+  <div class="rp-sub">THIS CONTROLLER REQUIRES LANDSCAPE</div>
+</div>
+
+<!-- TAP TO START (fullscreen gate — AirConsole style) -->
+<div id="tap-start">
+  <div class="ts-logo">RETRO HUB</div>
+  <div class="ts-sub">CONTROLLER</div>
+  <div class="ts-btn" id="ts-btn">
+    <span class="ts-btn-txt">TAP TO START</span>
+  </div>
+  <div class="ts-hint">Tap to enter fullscreen</div>
+</div>
 
 <!-- RECONNECT OVERLAY -->
 <div class="view off" id="v-reconnect">
@@ -369,6 +428,18 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;
 <script>
 // ── Session keys ───────────────────────────────────────────────────────────
 const SS_KEY = 'rh_ctrl_session'; // stores {roomCode, playerId}
+const APP_VERSION = '2.1';
+
+// Version check — clear stale session if app was updated
+(function(){
+  const storedVer = sessionStorage.getItem('rh_version');
+  if (storedVer && storedVer !== APP_VERSION) {
+    sessionStorage.removeItem(SS_KEY);
+    console.log('[RetroHub] App updated, cleared stale session');
+  }
+  sessionStorage.setItem('rh_version', APP_VERSION);
+})();
+
 function saveSession(roomCode, playerId) { sessionStorage.setItem(SS_KEY, JSON.stringify({roomCode,playerId})); }
 function loadSession() { try{return JSON.parse(sessionStorage.getItem(SS_KEY)||'null');}catch{return null;} }
 function clearSession() { sessionStorage.removeItem(SS_KEY); }
@@ -408,38 +479,51 @@ function fb(id,label,key,code,color,x,y,sz=44){
 
 const LAYOUTS={
   nes(W,H){
+    // nestopia: RetroPad B(z)=NES_B, A(x)=NES_A
     const lx=W*.18,rx=W*.73,cy=H*.5,s=38;
-    return[...dpad(lx,cy,s),fb('b','B','x','KeyX','b',rx,cy-28,42),fb('a','A','z','KeyZ','a',rx+50,cy+10,42),
+    return[...dpad(lx,cy,s),
+      fb('b','B','z','KeyZ','b',rx,    cy-28,42),
+      fb('a','A','x','KeyX','a',rx+50, cy+10,42),
       sys('sel','SELECT','Shift','ShiftLeft',W*.38,H*.78,52,22),home(W*.5-13,H*.78),sys('sta','START','Enter','Enter',W*.6,H*.78,52,22,true)];
   },
   snes(W,H){
+    // snes9x: B=z A=x Y=a X=s L=q R=w
     const lx=W*.18,rx=W*.72,cy=H*.52,s=36,bs=44;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,70,24),sh('r','R','e','KeyE',W*.78,H*.04,70,24),
-      ...dpad(lx,cy,s),fb('y','Y','s','KeyS','y',rx,cy-bs/2-2),fb('x','X','x','KeyX','x',rx+bs+2,cy-bs-2,bs),
-      fb('b','B','z','KeyZ','b',rx+bs+2,cy,bs),fb('a','A','a','KeyA','a',rx+bs*2+4,cy-bs/2-2,bs),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,70,24),sh('r','R','w','KeyW',W*.78,H*.04,70,24),
+      ...dpad(lx,cy,s),
+      fb('y','Y','a','KeyA','y',rx,         cy-bs/2-2,bs),
+      fb('x','X','s','KeyS','x',rx+bs+2,    cy-bs-2,  bs),
+      fb('b','B','z','KeyZ','b',rx+bs+2,    cy,       bs),
+      fb('a','A','x','KeyX','a',rx+bs*2+4,  cy-bs/2-2,bs),
       sys('sel','SELECT','Shift','ShiftLeft',W*.37,H*.78,52,22),home(W*.5-13,H*.78),sys('sta','START','Enter','Enter',W*.59,H*.78,52,22,true)];
   },
   gb(W,H){
+    // gambatte: B=z A=x
     const lx=W*.18,rx=W*.72,cy=H*.5,s=36;
-    return[...dpad(lx,cy,s),fb('b','B','x','KeyX','b',rx,cy-24,42),fb('a','A','z','KeyZ','a',rx+50,cy+10,42),
+    return[...dpad(lx,cy,s),
+      fb('b','B','z','KeyZ','b',rx,    cy-24,42),
+      fb('a','A','x','KeyX','a',rx+50, cy+10,42),
       sys('sel','SELECT','Shift','ShiftLeft',W*.36,H*.78,52,22),home(W*.5-13,H*.78),sys('sta','START','Enter','Enter',W*.58,H*.78,52,22,true)];
   },
   gba(W,H){
+    // mgba: B=z A=x L=q R=w
     const lx=W*.18,rx=W*.72,cy=H*.5,s=36;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','e','KeyE',W*.78,H*.04,60,24),
-      ...dpad(lx,cy,s),fb('b','B','x','KeyX','b',rx,cy-24,44),fb('a','A','z','KeyZ','a',rx+52,cy+10,44),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','w','KeyW',W*.78,H*.04,60,24),
+      ...dpad(lx,cy,s),
+      fb('b','B','z','KeyZ','b',rx,    cy-24,44),
+      fb('a','A','x','KeyX','a',rx+52, cy+10,44),
       sys('sel','SELECT','Shift','ShiftLeft',W*.37,H*.78,52,22),home(W*.5-13,H*.78),sys('sta','START','Enter','Enter',W*.59,H*.78,52,22,true)];
   },
   nds(W,H){
     const lx=W*.18,rx=W*.7,cy=H*.5,bs=44,s=36;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','e','KeyE',W*.78,H*.04,60,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','w','KeyW',W*.78,H*.04,60,24),
       ...dpad(lx,cy,s),fb('y','Y','s','KeyS','y',rx,cy-bs/2-2,bs),fb('x','X','x','KeyX','x',rx+bs+2,cy-bs-2,bs),
       fb('b','B','z','KeyZ','b',rx+bs+2,cy,bs),fb('a','A','a','KeyA','a',rx+bs*2+4,cy-bs/2-2,bs),
       sys('sel','SELECT','Shift','ShiftLeft',W*.37,H*.8,52,22),home(W*.5-13,H*.8),sys('sta','START','Enter','Enter',W*.59,H*.8,52,22,true)];
   },
   n64(W,H){
     const lx=W*.16,rx=W*.68,cy=H*.48,s=36;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,55,24),sh('z','Z','f','KeyF',W*.02,H*.04+28,55,24),sh('r','R','e','KeyE',W*.79,H*.04,55,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,55,24),sh('z','Z','f','KeyF',W*.02,H*.04+28,55,24),sh('r','R','w','KeyW',W*.79,H*.04,55,24),
       analog(lx-20,cy-60,64),...dpad(lx+5,cy+35,s),fb('b','B','b','KeyB','b',rx+10,cy+20,46),fb('a','A','a','KeyA','a',rx+60,cy+40,50),
       {id:'cu',label:'C▲',key:'c',code:'KeyC',type:'cp',color:'yellow',x:rx+5,y:cy-55,w:34,h:34},
       {id:'cr',label:'C▶',key:'v',code:'KeyV',type:'cp',color:'yellow',x:rx+43,y:cy-55,w:34,h:34},
@@ -448,28 +532,42 @@ const LAYOUTS={
       sys('sta','START','Enter','Enter',W*.5-26,H*.8,52,24,true),home(W*.5+30,H*.8)];
   },
   psx(W,H){
+    // pcsx_rearmed: L1=q L2=Tab R1=w R2=e, B(z)=Cross A(x)=Circle Y(a)=Square X(s)=Triangle
     const lx=W*.18,rx=W*.68,cy=H*.48,bs=44,s=34;
     return[sh('l1','L1','q','KeyQ',W*.02,H*.02,60,24),sh('l2','L2','Tab','Tab',W*.02,H*.02+28,60,24),
-      sh('r1','R1','e','KeyE',W*.79,H*.02,60,24),sh('r2','R2','r','KeyR',W*.79,H*.02+28,60,24),
+      sh('r1','R1','w','KeyW',W*.79,H*.02,60,24),sh('r2','R2','e','KeyE',W*.79,H*.02+28,60,24),
       analog(lx-24,H*.62,62),{id:'anr',label:'',key:'_analog2',code:'_analog2',type:'analog',x:rx-10,y:H*.62,w:62,h:62},
-      ...dpad(lx,cy,s),fb('tri','△','x','KeyX','tri',rx+bs/2,cy-bs-4,bs),fb('sq','□','s','KeyS','sq',rx,cy,bs),
-      fb('ci','○','z','KeyZ','circle',rx+bs*2,cy,bs),fb('cr','×','a','KeyA','cross',rx+bs/2,cy+bs+4,bs),
+      ...dpad(lx,cy,s),fb('tri','△','s','KeyS','tri',rx+bs/2,cy-bs-4,bs),
+      fb('sq','□','a','KeyA','sq',rx,cy,bs),
+      fb('ci','○','x','KeyX','circle',rx+bs*2,cy,bs),
+      fb('cr','×','z','KeyZ','cross',rx+bs/2,cy+bs+4,bs),
       sys('sel','SELECT','v','KeyV',W*.37,H*.52,50,20),home(W*.5-13,H*.52),sys('sta','START','Enter','Enter',W*.58,H*.52,50,20,true)];
   },
   psp(W,H){
     const lx=W*.18,rx=W*.68,cy=H*.46,bs=44,s=34;
-    return[sh('l','L','q','KeyQ',W*.02,H*.02,60,24),sh('r','R','e','KeyE',W*.79,H*.02,60,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.02,60,24),sh('r','R','w','KeyW',W*.79,H*.02,60,24),
       analog(lx-18,H*.66,62),...dpad(lx,cy,s),
-      fb('tri','△','x','KeyX','tri',rx+bs/2,cy-bs-4,bs),fb('sq','□','s','KeyS','sq',rx,cy,bs),
-      fb('ci','○','z','KeyZ','circle',rx+bs*2,cy,bs),fb('cr','×','a','KeyA','cross',rx+bs/2,cy+bs+4,bs),
+      fb('tri','△','s','KeyS','tri',rx+bs/2,cy-bs-4,bs),
+      fb('sq','□','a','KeyA','sq',rx,cy,bs),
+      fb('ci','○','x','KeyX','circle',rx+bs*2,cy,bs),
+      fb('cr','×','z','KeyZ','cross',rx+bs/2,cy+bs+4,bs),
       sys('sel','SELECT','v','KeyV',W*.37,H*.8,50,20),home(W*.5-13,H*.8),sys('sta','START','Enter','Enter',W*.58,H*.8,50,20,true)];
   },
   segaMD(W,H){
+    // genesis_plus_gx verified bindings (toadking.com/retroarch/genesis_plus_gx):
+    // MD A=a  MD B=x  MD C=z
+    // MD X=s  MD Y=q  MD Z=w
     const lx=W*.17,rx=W*.57,cy=H*.48,s=36;
     return[...dpad(lx,cy,s),
-      fb('md_z','Z','Tab','Tab','z',rx,cy-50,40),fb('md_x','X','q','KeyQ','x',rx+46,cy-50,40),fb('md_y','Y','s','KeyS','y',rx+92,cy-50,40),
-      fb('md_a','A','a','KeyA','a',rx,cy+4,40),fb('md_b','B','x','KeyX','b',rx+46,cy+4,40),fb('md_c','C','z','KeyZ','x',rx+92,cy+4,40),
-      sys('mod','MODE','v','KeyV',W*.38,H*.8,50,20),home(W*.5-13,H*.8),sys('sta','START','Enter','Enter',W*.59,H*.8,50,20,true)];
+      fb('md_x','X','s','KeyS','x',rx,    cy-50,40),
+      fb('md_y','Y','q','KeyQ','y',rx+46, cy-50,40),
+      fb('md_z','Z','w','KeyW','z',rx+92, cy-50,40),
+      fb('md_a','A','a','KeyA','a',rx,    cy+4, 40),
+      fb('md_b','B','x','KeyX','b',rx+46, cy+4, 40),
+      fb('md_c','C','z','KeyZ','c',rx+92, cy+4, 40),
+      sys('mod','MODE','Shift','ShiftLeft',W*.38,H*.8,50,20),
+      home(W*.5-13,H*.8),
+      sys('sta','START','Enter','Enter',W*.59,H*.8,50,20,true)];
   },
   segaMS(W,H){
     const lx=W*.18,rx=W*.72,cy=H*.5,s=36;
@@ -485,7 +583,7 @@ const LAYOUTS={
   sega32x(W,H){return LAYOUTS.segaCD(W,H);},
   segaSaturn(W,H){
     const lx=W*.17,rx=W*.57,cy=H*.48,s=36;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,55,24),sh('r','R','e','KeyE',W*.79,H*.04,55,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,55,24),sh('r','R','w','KeyW',W*.79,H*.04,55,24),
       ...dpad(lx,cy,s),fb('z','Z','Tab','Tab','z',rx,cy-46,40),fb('x','X','q','KeyQ','x',rx+46,cy-46,40),fb('y','Y','s','KeyS','y',rx+92,cy-46,40),
       fb('a','A','a','KeyA','a',rx,cy+6,40),fb('b','B','x','KeyX','b',rx+46,cy+6,40),fb('c','C','z','KeyZ','x',rx+92,cy+6,40),
       home(W*.5-13,H*.8),sys('sta','START','Enter','Enter',W*.58,H*.8,52,22,true)];
@@ -506,7 +604,7 @@ const LAYOUTS={
   },
   jaguar(W,H){
     const lx=W*.17,rx=W*.67,cy=H*.5,bs=44,s=34;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','e','KeyE',W*.79,H*.04,60,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','w','KeyW',W*.79,H*.04,60,24),
       ...dpad(lx,cy,s),fb('a','A','a','KeyA','a',rx,cy+10,bs),fb('b','B','b','KeyB','b',rx+bs+4,cy+10,bs),fb('c','C','c','KeyC','c',rx+bs*2+8,cy+10,bs),
       sys('opt','OPTION','Escape','Escape',W*.38,H*.8,56,22),home(W*.5-13,H*.8),sys('pau','PAUSE','p','KeyP',W*.59,H*.8,52,22)];
   },
@@ -530,7 +628,7 @@ const LAYOUTS={
   },
   pcfx(W,H){
     const lx=W*.17,rx=W*.67,cy=H*.48,bs=44,s=34;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','e','KeyE',W*.79,H*.04,60,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','w','KeyW',W*.79,H*.04,60,24),
       ...dpad(lx,cy,s),fb('i','I','a','KeyA','a',rx+bs/2,cy-bs-4,bs),fb('ii','II','b','KeyB','b',rx,cy,bs),
       fb('iii','III','x','KeyX','x',rx+bs+4,cy,bs),fb('iv','IV','s','KeyS','y',rx+bs/2,cy+bs+4,bs),
       sys('sel','SELECT','Shift','ShiftLeft',W*.37,H*.8,52,22),home(W*.5-13,H*.8),sys('run','RUN','Enter','Enter',W*.58,H*.8,52,22,true)];
@@ -552,13 +650,13 @@ const LAYOUTS={
   },
   vb(W,H){
     const lx=W*.18,rx=W*.72,cy=H*.5,s=36;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','e','KeyE',W*.79,H*.04,60,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','w','KeyW',W*.79,H*.04,60,24),
       ...dpad(lx,cy,s),fb('b','B','x','KeyX','b',rx,cy-24,44),fb('a','A','z','KeyZ','a',rx+52,cy+10,44),
       sys('sel','SELECT','Shift','ShiftLeft',W*.37,H*.8,52,22),home(W*.5-13,H*.8),sys('sta','START','Enter','Enter',W*.58,H*.8,52,22,true)];
   },
   '3do'(W,H){
     const lx=W*.17,rx=W*.67,cy=H*.5,s=34;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,55,24),sh('r','R','e','KeyE',W*.79,H*.04,55,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,55,24),sh('r','R','w','KeyW',W*.79,H*.04,55,24),
       ...dpad(lx,cy,s),fb('c','C','c','KeyC','c',rx,cy-46,44),fb('b','B','b','KeyB','b',rx,cy,44),fb('a','A','a','KeyA','a',rx+50,cy,44),
       sys('x','X','x','KeyX',W*.36,H*.8,40,20),home(W*.5-13,H*.8),sys('p','P','p','KeyP',W*.58,H*.8,40,20),sys('st','STOP','Escape','Escape',W*.68,H*.8,44,20)];
   },
@@ -598,7 +696,7 @@ const LAYOUTS={
   },
   default(W,H){
     const lx=W*.18,rx=W*.68,cy=H*.48,bs=44,s=34;
-    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','e','KeyE',W*.79,H*.04,60,24),
+    return[sh('l','L','q','KeyQ',W*.02,H*.04,60,24),sh('r','R','w','KeyW',W*.79,H*.04,60,24),
       analog(lx-18,H*.66,60),...dpad(lx,cy,s),
       fb('y','Y','s','KeyS','y',rx+bs/2,cy-bs-4,bs),fb('x','X','x','KeyX','x',rx,cy,bs),
       fb('b','B','z','KeyZ','b',rx+bs+4,cy,bs),fb('a','A','a','KeyA','a',rx+bs/2,cy+bs+4,bs),
@@ -919,7 +1017,18 @@ function toast(msg,warn=false){
   const el=document.createElement('div');el.className='toast'+(warn?' w':'');el.textContent=msg;
   document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),3200);
 }
-function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('off',v.id!==id));}
+function lockLandscape(){
+  try{
+    if(screen.orientation&&screen.orientation.lock)
+      screen.orientation.lock('landscape').catch(()=>{});
+  }catch(e){}
+}
+
+function show(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('off',v.id!==id));
+  // Lock landscape when entering pad view
+  try{ if(id==='v-pad') lockLandscape(); }catch(e){}
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SOCKET & STATE
@@ -983,21 +1092,20 @@ socket.on('connect', ()=>{
 
 socket.on('disconnect',()=>{
   if(playerId){
+    // Mark dots as away on TV if we were in a session
     show('v-reconnect');
     document.getElementById('rc-sub').textContent='CONNECTION LOST — RECONNECTING...';
   }
+  // Reset playerId so we don't show reconnect on a fresh page load disconnect
 });
 
-socket.on('reconnect',()=>{
-  // Socket.io auto-reconnects — on reconnect we re-join
-  const sess=loadSession();
-  if(sess){
-    socket.emit('controller:join',{roomCode:sess.roomCode,existingPlayerId:sess.playerId});
-  }
-});
+// Note: socket.on('reconnect') is deprecated in Socket.io v4
+// Reconnect is handled in socket.on('connect') above which fires on every connection
 
 socket.on('room:joined',({playerId:pid,roomCode:rc,reconnected,state})=>{
   isReconnecting=false;
+  // Dismiss the tap-to-start overlay if still showing — user already interacted
+  if(!fsGranted) dismissTapStart();
   playerId=pid; roomCode=rc;
   saveSession(rc,pid);
   const cls=pid===2?'p2':'p1';
@@ -1013,7 +1121,8 @@ socket.on('room:joined',({playerId:pid,roomCode:rc,reconnected,state})=>{
   // Restore state if rejoining mid-session
   if(state){
     if(state.lastSelection){
-      currentGame=state.lastSelection.game||state.lastSelection;
+      const _ls=state.lastSelection;
+      currentGame=(_ls&&_ls.game)?_ls.game:_ls;
       if(currentGame){
         document.getElementById('gc-name').textContent=currentGame.name||'';
         document.getElementById('gc-sys').textContent=SYSINFO[currentGame.core]||currentGame.core||'';
@@ -1032,11 +1141,20 @@ socket.on('room:joined',({playerId:pid,roomCode:rc,reconnected,state})=>{
 });
 
 socket.on('room:error',({message})=>{
+  const wasReconnecting=isReconnecting;
   isReconnecting=false;
   clearSession();
-  document.getElementById('jerr').textContent=message;
   show('v-join');
-  vib([50,20,50]);
+  if(wasReconnecting){
+    // Silent rejoin failed — just show join screen cleanly, no error
+    document.getElementById('jerr').textContent='';
+    document.getElementById('code-in').value='';
+    toast('SESSION EXPIRED — ENTER NEW CODE',true);
+  } else {
+    // User manually tried to join — show the error
+    document.getElementById('jerr').textContent=message;
+    vib([50,20,50]);
+  }
 });
 
 socket.on('room:left',()=>{
@@ -1063,25 +1181,29 @@ socket.on('session:ended',({reason})=>{
 });
 
 // ── Game selection ─────────────────────────────────────────────────────────
-socket.on('hub:selection',({game})=>{
+socket.on('hub:selection',(data)=>{
+  // TV sends {game:{...}}
+  const game = data.game || data;
   currentGame=game; if(!game) return;
-  document.getElementById('gc-name').textContent=game.name;
-  document.getElementById('gc-sys').textContent=SYSINFO[game.core]||game.core;
+  document.getElementById('gc-name').textContent=game.name||'';
+  document.getElementById('gc-sys').textContent=SYSINFO[game.core]||game.core||'';
   document.getElementById('gc-icon').textContent=SYSICONS[game.core]||'🎮';
 });
 
 // ── Game started ───────────────────────────────────────────────────────────
-socket.on('game:started',game=>{
-  if(game) currentGame=game;
-  if(!currentGame) return;
-  document.getElementById('pad-name').textContent=currentGame.name;
+socket.on('game:started',data=>{
+  // server sends lastSelection which is {game:{name,core,...}}
+  // handle both shapes: {game:{...}} and {name,core,...} directly
+  if(data) currentGame = data.game || data;
+  if(!currentGame||!currentGame.core) return;
+  document.getElementById('pad-name').textContent=currentGame.name||'';
   show('v-pad');
   requestAnimationFrame(()=>buildPad(currentGame.core));
 });
 
 socket.on('nav:start',({initiatorPlayerId}={})=>{
-  if(!currentGame) return;
-  document.getElementById('pad-name').textContent=currentGame.name;
+  if(!currentGame||!currentGame.core) return;
+  document.getElementById('pad-name').textContent=currentGame.name||'';
   show('v-pad');
   requestAnimationFrame(()=>buildPad(currentGame.core));
 });
@@ -1096,6 +1218,7 @@ document.getElementById('btn-join').addEventListener('click',()=>{
   const code=document.getElementById('code-in').value.trim().toUpperCase();
   document.getElementById('jerr').textContent='';
   if(code.length<2){document.getElementById('jerr').textContent='Enter room code';return;}
+  dismissTapStart(); // dismiss overlay before transitioning
   socket.emit('controller:join',{roomCode:code});vib(18);
 });
 document.getElementById('code-in').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btn-join').click();});
@@ -1106,26 +1229,86 @@ document.getElementById('btn-play').addEventListener('pointerdown',e=>{
   if(playerId!==1)return;e.preventDefault();vib([32,12,32]);socket.emit('nav:start',{});
   if(currentGame){document.getElementById('pad-name').textContent=currentGame.name;show('v-pad');requestAnimationFrame(()=>buildPad(currentGame.core));}
 });
+// btn-back: first tap shows confirm text, second tap within 2s stops game
+let _backTaps=0, _backTimer=null;
 document.getElementById('btn-back').addEventListener('pointerdown',e=>{
   e.preventDefault();
-  showConfirm('STOP GAME?','This stops the game for everyone.',()=>{
-    vib(32);if(editMode)exitEditMode();
+  e.stopPropagation();
+  _backTaps++;
+  if(_backTaps===1){
+    // First tap — change button text as visual confirm
+    const btn=document.getElementById('btn-back');
+    btn.textContent='CONFIRM?';
+    btn.style.color='var(--cr)';
+    btn.style.borderColor='var(--cr)';
+    clearTimeout(_backTimer);
+    _backTimer=setTimeout(()=>{
+      _backTaps=0;
+      btn.textContent='← Stop';
+      btn.style.color='';
+      btn.style.borderColor='';
+    },2000);
+    vib(20);
+  } else {
+    // Second tap — actually stop
+    clearTimeout(_backTimer);
+    _backTaps=0;
+    const btn=document.getElementById('btn-back');
+    btn.textContent='← Stop';
+    btn.style.color='';
+    btn.style.borderColor='';
+    vib([32,12,32]);
+    if(editMode)exitEditMode();
     socket.emit('game:stop');
     if(playerId===2)show('v-wait');else show('v-nav');
-  });
+  }
 });
 
 document.addEventListener('contextmenu',e=>e.preventDefault());
 if('wakeLock'in navigator)navigator.wakeLock.request('screen').catch(()=>{});
-(function(){
-  function tryFS(){
-    const el=document.documentElement;
-    const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen;
-    if(req)req.call(el).catch(()=>{});
-    try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});}catch(e){}
-  }
-  document.addEventListener('pointerdown',tryFS,{once:true});
-})();
+// ── Fullscreen + orientation (AirConsole style tap-to-start) ──────────────
+
+
+function enterFS(){
+  const el=document.documentElement;
+  const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+  if(req) req.call(el).then(()=>lockLandscape()).catch(()=>lockLandscape());
+  else lockLandscape();
+}
+
+// Tap-to-start gate — required so browser grants fullscreen on user gesture
+const tapStart = document.getElementById('tap-start');
+const tsBtn    = document.getElementById('ts-btn');
+let fsGranted  = false;
+
+function dismissTapStart(){
+  if(fsGranted) return;
+  fsGranted=true;
+  enterFS();
+  tapStart.classList.add('gone');
+  // Remove from DOM after fade
+  setTimeout(()=>{ if(tapStart.parentNode) tapStart.parentNode.removeChild(tapStart); }, 400);
+}
+
+// iOS Safari: check if already running as standalone (added to home screen)
+if(window.navigator.standalone===true || window.matchMedia('(display-mode: fullscreen)').matches){
+  fsGranted=true;
+  tapStart.classList.add('gone');
+}
+
+tapStart.addEventListener('pointerdown', e=>{
+  e.preventDefault();
+  dismissTapStart();
+},{passive:false});
+
+// Rebuild pad on resize/orientation change — fixes wrong positions on different phones
+let _rebuildTimer=null;
+window.addEventListener('resize',()=>{
+  clearTimeout(_rebuildTimer);
+  _rebuildTimer=setTimeout(()=>{
+    if(currentCore){ buildPad(currentCore); }
+  },150);
+});
 </script>
 </body>
 </html>

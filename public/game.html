@@ -55,7 +55,7 @@ body.ejs-ready #game > * { visibility: visible; }
   var qs = new URLSearchParams(location.search);
   var core     = qs.get('core')  || 'segaMD';
   var rom      = qs.get('rom')   || '';
-  var dataPath = qs.get('data')  || 'emu/data/';
+  var dataPath = qs.get('data')  || 'https://cdn.emulatorjs.org/stable/data/';
   var name     = decodeURIComponent(qs.get('name') || 'Loading…');
   var color    = qs.get('color') || '#4a9eed';
 
@@ -139,11 +139,18 @@ body.ejs-ready #game > * { visibility: visible; }
   // value: 1=pressed, 0=released
   //
   // Key → RetroArch button slot (P1 default keyboard map, reused for P2 via direct API)
+  // RetroArch default keyboard → RetroPad slot (P2 simulateInput)
+  // Verified from genesis_plus_gx docs:
+  // slot 0=B → key x    slot 1=Y → key a
+  // slot 2=SELECT → Shift  slot 3=START → Enter
+  // slot 4=UP  5=DOWN  6=LEFT  7=RIGHT
+  // slot 8=A → key z   slot 9=X → key s
+  // slot 10=L → key q  slot 11=R → key w
+  // slot 12=L2 → Tab   slot 13=R2 → e
   var KEY_SLOT = {
     ArrowUp:4, ArrowDown:5, ArrowLeft:6, ArrowRight:7,
-    x:0, s:1, v:2, Enter:3,
-    z:8, a:9, q:10, e:11, Tab:12, r:13,
-    Shift:2,
+    x:0, a:1, Shift:2, Enter:3,
+    z:8, s:9, q:10, w:11, Tab:12, e:13,
   };
 
   // Called from parent index.html as: frame.contentWindow.EJS_p2input(action, key)
@@ -161,6 +168,6 @@ body.ejs-ready #game > * { visibility: visible; }
 }());
 </script>
 
-<script src="emu/data/loader.js"></script>
+<script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
 </body>
 </html>

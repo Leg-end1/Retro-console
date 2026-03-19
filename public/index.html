@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RetroHub</title>
+<meta name="app-version" content="2.1">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -494,7 +495,7 @@ function updateDots() {
 // ── Game URL ───────────────────────────────────────────────────────────────
 function gameURL(g) {
   const s=SYS[g.core]||DEF;
-  return `/game.html?core=${encodeURIComponent(g.core)}&rom=${encodeURIComponent('/games/'+g.filename)}&name=${encodeURIComponent(g.name)}&color=${encodeURIComponent(s.a)}&data=${encodeURIComponent('https://cdn.emulatorjs.org/stable/data/')}`;
+  return `/game.html?core=${encodeURIComponent(g.core)}&rom=${encodeURIComponent('/games/'+g.filename)}&name=${encodeURIComponent(g.name)}&color=${encodeURIComponent(s.a)}`;
 }
 
 // ── Boot cover ─────────────────────────────────────────────────────────────
@@ -515,7 +516,8 @@ function stopGame() { gameActive=false; elGview.classList.remove('vis'); elFrame
 
 // ── Key injection ─────────────────────────────────────────────────────────
 // Cache the canvas target once the game starts — avoids DOM queries on every input
-const KC={ArrowUp:38,ArrowDown:40,ArrowLeft:37,ArrowRight:39,Enter:13,Escape:27,Shift:16,Tab:9,' ':32,q:81,e:69,r:82,w:87,a:65,s:83,d:68,v:86,x:88,z:90};
+// RetroArch default: B=z Y=a SELECT=Shift START=Enter A=x X=s L=q R=w L2=Tab R2=e
+const KC={ArrowUp:38,ArrowDown:40,ArrowLeft:37,ArrowRight:39,Enter:13,Shift:16,Tab:9,z:90,a:65,x:88,s:83,q:81,w:87,e:69,Escape:27,' ':32,r:82,d:68};
 let _cachedTarget=null, _cachedWin=null;
 
 function _getTarget() {

@@ -24,6 +24,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Prevent browser caching HTML files — always serve fresh
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Extension → core map ──────────────────────────────────────────────────────
@@ -81,10 +90,7 @@ app.get('/api/games', (_req, res) => {
   });
 });
 
-// ── Upload ROM — uses built-in multipart via busboy (no extra deps) ─────────────
-const busboy = require('node:module').createRequire(import.meta?.url ?? __filename)('busboy') || null;
-
-// Simple streaming upload using Express raw body + manual boundary parsing
+// ── Upload ROM — manual multipart parsing, no extra deps ─────────────────────
 app.post('/api/upload', (req, res) => {
   const ct = req.headers['content-type'] || '';
   const boundary = ct.split('boundary=')[1];
@@ -359,7 +365,15 @@ io.on('connection', socket => {
 
     const pid = parseInt(existingPlayerId) || 0;
 
-    // Try to reclaim a disconnected slot
+    // Clean stale slots — connected=true but socket actually dead
+    room.players.forEach(p => {
+      if (p.connected && !io.sockets.sockets.get(p.socketId)) {
+        p.connected = false;
+        console.log(`[ctrl] cleaned stale slot P${p.playerId} in ${code}`);
+      }
+    });
+
+    // Try to reclaim a disconnected slot (same player ID)
     if (pid) {
       const slot = room.players.find(p => p.playerId === pid && !p.connected);
       if (slot) {
@@ -378,8 +392,8 @@ io.on('connection', socket => {
       }
     }
 
-    // New slot
-    const connected = room.players.filter(p => p.connected).length;
+    // New slot — count only truly live connections
+    const connected = room.players.filter(p => p.connected && io.sockets.sockets.get(p.socketId)).length;
     if (connected >= 2) return socket.emit('room:error', { message: 'Room is full (2 players max).' });
 
     // Assign lowest available player ID
