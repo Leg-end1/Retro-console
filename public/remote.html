@@ -1285,6 +1285,28 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 if('wakeLock'in navigator)navigator.wakeLock.request('screen').catch(()=>{});
 // ── Fullscreen + orientation (AirConsole style tap-to-start) ──────────────
 
+document.addEventListener('touchmove', function(e) {
+  // Since the remote view has no scrollable text/menus, we can safely 
+  // block ALL touch dragging that isn't handled by our D-Pad/Buttons.
+  if (e.scale !== 1) {
+    e.preventDefault();
+  }
+  e.preventDefault(); 
+}, { passive: false });
+
+let lastTap = 0;
+document.addEventListener('touchend', function(e) {
+  const currentTime = new Date().getTime();
+  const tapLength = currentTime - lastTap;
+  if (tapLength < 300 && tapLength > 0) {
+    e.preventDefault(); // Block double tap
+  }
+  lastTap = currentTime;
+}, { passive: false });
+
+document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
+document.addEventListener('gestureend', function(e) { e.preventDefault(); });
 
 function enterFS(){
   const el=document.documentElement;
