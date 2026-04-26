@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RetroHub — Game Library</title>
+<title>RetroHub — Shop</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -17,9 +17,8 @@ html,body{min-height:100dvh;background:var(--bg);color:var(--txt);font-family:'S
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:linear-gradient(rgba(0,255,200,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,200,.025) 1px,transparent 1px);
   background-size:32px 32px}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px)}
 
+/* ── TOP BAR ── */
 #topbar{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:2px solid var(--cx);
   display:flex;align-items:center;padding:0 20px;height:46px;gap:14px}
 .logo-link{text-decoration:none;display:flex;align-items:center;gap:8px;
@@ -28,25 +27,68 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
 .sep{width:2px;height:18px;background:var(--bdr2)}
 .page-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--cy);letter-spacing:2px}
 .spacer{flex:1}
-.topbar-info{font-family:'VT323',monospace;font-size:14px;color:var(--t2);letter-spacing:1px}
-
-#main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:20px 16px 80px}
+#lib-count{font-family:'VT323',monospace;font-size:15px;color:var(--t2);letter-spacing:1px}
 
 /* ── TABS ── */
-.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:2px solid var(--bdr)}
-.tab{font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 14px;cursor:pointer;
+#main{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:20px 16px 80px}
+.tabs{display:flex;gap:2px;margin-bottom:24px;border-bottom:2px solid var(--bdr)}
+.tab{font-family:'Press Start 2P',monospace;font-size:7px;padding:9px 16px;cursor:pointer;
   color:var(--t2);letter-spacing:1px;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .1s}
 .tab:hover{color:var(--txt)}
 .tab.active{color:var(--cx);border-bottom-color:var(--cx)}
 
+/* ── STORE TAB ── */
+.store-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.store-title{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--cx);letter-spacing:2px}
+.store-sub{font-family:'VT323',monospace;font-size:15px;color:var(--t2);letter-spacing:1px}
+.gh-config{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}
+#gh-user{padding:7px 10px;background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:16px;color:var(--white);outline:none;width:140px;letter-spacing:1px}
+#gh-user:focus{border-color:var(--cx)}
+#gh-user::placeholder{color:var(--t3)}
+#gh-repo{padding:7px 10px;background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:16px;color:var(--white);outline:none;width:160px;letter-spacing:1px}
+#gh-repo:focus{border-color:var(--cx)}
+#gh-repo::placeholder{color:var(--t3)}
+#btn-load-store{padding:8px 14px;background:var(--cy);border:none;cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--bg);letter-spacing:1px;transition:all .1s}
+#btn-load-store:hover{opacity:.85}
+#btn-load-store:active{transform:translate(1px,1px)}
+
+/* store filter */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+#store-search{flex:1;min-width:180px;padding:9px 12px;background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:18px;letter-spacing:2px;color:var(--white);outline:none}
+#store-search:focus{border-color:var(--cx)}
+#store-search::placeholder{color:var(--t3)}
+#store-sys{padding:9px 10px;background:var(--panel);border:2px solid var(--bdr2);
+  font-family:'VT323',monospace;font-size:16px;color:var(--white);outline:none;cursor:pointer}
+#store-sys option{background:var(--panel2)}
+
+/* store grid */
+#store-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:24px}
+.sc-card{background:var(--panel);border:1px solid var(--bdr);padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .1s;position:relative}
+.sc-card:hover{border-color:var(--bdr2)}
+.sc-sys{font-family:'Press Start 2P',monospace;font-size:5px;letter-spacing:1px;padding:2px 6px;border:1px solid;display:inline-block;align-self:flex-start}
+.sc-name{font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;color:var(--white);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.sc-size{font-family:'VT323',monospace;font-size:13px;color:var(--t3);letter-spacing:1px}
+.sc-btns{display:flex;gap:6px;margin-top:auto}
+.sc-add{flex:1;padding:8px 6px;background:var(--cx);border:none;cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--bg);letter-spacing:1px;
+  transition:all .1s;position:relative}
+.sc-add::after{content:'';position:absolute;bottom:-2px;left:2px;right:-2px;top:2px;background:rgba(0,200,160,.2);z-index:-1}
+.sc-add:active{transform:translate(1px,1px)}
+.sc-add:disabled{opacity:.4;cursor:default}
+.sc-add.done{background:var(--cg)}
+.sc-dl{padding:8px 10px;background:transparent;border:1px solid var(--bdr2);cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--t2);letter-spacing:1px;transition:all .1s}
+.sc-dl:hover{border-color:var(--cx);color:var(--cx)}
+.sc-dl:active{transform:translate(1px,1px)}
+.sc-progress{position:absolute;bottom:0;left:0;height:2px;background:var(--cx);width:0%;transition:width .2s}
+
 /* ── LIBRARY TAB ── */
-#tab-library{display:block}
-#tab-upload{display:none}
-
-.section-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cx);letter-spacing:2px;margin-bottom:12px;display:block}
-
-/* library grid */
-#lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:20px}
+#lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-bottom:20px}
 .lib-card{background:var(--panel);border:1px solid var(--bdr);padding:12px;display:flex;flex-direction:column;gap:8px;transition:border-color .1s}
 .lib-card:hover{border-color:var(--bdr2)}
 .lc-sys{font-family:'Press Start 2P',monospace;font-size:5px;letter-spacing:1px;padding:2px 6px;border:1px solid;display:inline-block;align-self:flex-start}
@@ -63,22 +105,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
 .lc-del:hover{background:rgba(255,68,68,.08);border-color:var(--cr)}
 .lc-del:active{transform:translate(1px,1px)}
 
-/* search / filter bar */
-.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-#lib-search{flex:1;min-width:180px;padding:9px 12px;background:var(--panel);border:2px solid var(--bdr2);
-  font-family:'VT323',monospace;font-size:18px;letter-spacing:2px;color:var(--white);outline:none}
-#lib-search:focus{border-color:var(--cx)}
-#lib-search::placeholder{color:var(--t3)}
-#lib-sys{padding:9px 10px;background:var(--panel);border:2px solid var(--bdr2);
-  font-family:'VT323',monospace;font-size:16px;color:var(--white);outline:none;cursor:pointer}
-#lib-sys option{background:var(--panel2)}
-
-.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:14px;padding:48px 20px;text-align:center}
-.empty-ico{font-size:3rem;opacity:.2}
-.empty-txt{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--t3);letter-spacing:1px;line-height:2.4}
-
 /* ── UPLOAD TAB ── */
+.section-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cx);letter-spacing:2px;margin-bottom:12px;display:block}
 .upload-area{border:2px dashed var(--bdr2);padding:40px 24px;text-align:center;cursor:pointer;
   transition:border-color .2s;margin-bottom:16px;position:relative}
 .upload-area:hover,.upload-area.drag{border-color:var(--cx);background:rgba(0,255,200,.03)}
@@ -86,27 +114,26 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
 .ua-icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
 .ua-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--white);letter-spacing:1px;margin-bottom:8px}
 .ua-sub{font-family:'VT323',monospace;font-size:15px;color:var(--t2);letter-spacing:1px;line-height:1.6}
-
 #upload-queue{display:flex;flex-direction:column;gap:6px}
-.uq-item{background:var(--panel);border:1px solid var(--bdr);padding:10px 12px;
-  display:flex;align-items:center;gap:12px}
+.uq-item{background:var(--panel);border:1px solid var(--bdr);padding:10px 12px;display:flex;align-items:center;gap:12px}
 .uq-name{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--white);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uq-size{font-family:'VT323',monospace;font-size:14px;color:var(--t3);flex-shrink:0}
 .uq-bar-wrap{width:120px;flex-shrink:0;height:3px;background:var(--bdr);overflow:hidden}
 .uq-bar{height:100%;width:0%;background:var(--cx);transition:width .1s}
 .uq-status{font-family:'Press Start 2P',monospace;font-size:5px;letter-spacing:1px;flex-shrink:0;min-width:50px;text-align:right}
-.uq-status.ok{color:var(--cg)}
-.uq-status.err{color:var(--cr)}
-.uq-status.running{color:var(--cy)}
+.uq-status.ok{color:var(--cg)}.uq-status.err{color:var(--cr)}.uq-status.running{color:var(--cy)}
+
+/* ── EMPTY / LOADING ── */
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:48px 20px;text-align:center}
+.empty-ico{font-size:3rem;opacity:.2}
+.empty-txt{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--t3);letter-spacing:1px;line-height:2.4;white-space:pre-line}
+.spinner{width:28px;height:28px;border:3px solid var(--bdr2);border-top-color:var(--cx);animation:spin .6s steps(8) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── STATUS BAR ── */
-#status-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;
-  background:var(--bg2);border-top:1px solid var(--bdr);
-  padding:8px 20px;display:flex;align-items:center;gap:14px}
+#status-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg2);border-top:1px solid var(--bdr);padding:8px 20px;display:flex;align-items:center;gap:14px}
 .sb-txt{font-family:'VT323',monospace;font-size:15px;color:var(--t2);letter-spacing:1px;flex:1}
-.sb-txt.ok{color:var(--cg)}
-.sb-txt.err{color:var(--cr)}
-.sb-count{font-family:'VT323',monospace;font-size:14px;color:var(--t3);letter-spacing:1px}
+.sb-txt.ok{color:var(--cg)}.sb-txt.err{color:var(--cr)}
 
 /* system colours */
 .sys-nes{border-color:#ff5555;color:#ff5555}.sys-snes{border-color:#cc44ff;color:#cc44ff}
@@ -122,20 +149,59 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
 <div id="topbar">
   <a class="logo-link" href="/">◀ RETRO HUB</a>
   <div class="sep"></div>
-  <div class="page-title">► GAME LIBRARY</div>
+  <div class="page-title">► GAME SHOP</div>
   <div class="spacer"></div>
-  <div class="topbar-info" id="lib-count">LOADING...</div>
+  <div id="lib-count"></div>
 </div>
 
 <div id="main">
-
   <div class="tabs">
-    <div class="tab active" id="tab-btn-library" onclick="switchTab('library')">📂 LIBRARY</div>
-    <div class="tab" id="tab-btn-upload" onclick="switchTab('upload')">⬆ UPLOAD ROMS</div>
+    <div class="tab active" id="tab-btn-store"   onclick="switchTab('store')">🛒 STORE</div>
+    <div class="tab"        id="tab-btn-library" onclick="switchTab('library')">📂 MY LIBRARY</div>
+    <div class="tab"        id="tab-btn-upload"  onclick="switchTab('upload')">⬆ UPLOAD</div>
   </div>
 
-  <!-- LIBRARY TAB -->
-  <div id="tab-library">
+  <!-- ── STORE TAB ── -->
+  <div id="tab-store">
+    <div class="store-header">
+      <div>
+        <div class="store-title">► GAME STORE</div>
+        <div class="store-sub">Browse & download games from your GitHub releases repo</div>
+      </div>
+      <div class="gh-config">
+        <input id="gh-user" type="text" placeholder="github user" autocomplete="off" spellcheck="false">
+        <input id="gh-repo" type="text" placeholder="repo name" autocomplete="off" spellcheck="false">
+        <button id="btn-load-store" onclick="loadStore()">► LOAD</button>
+      </div>
+    </div>
+    <div class="filter-row">
+      <input id="store-search" type="text" placeholder="SEARCH GAMES..." autocomplete="off" spellcheck="false" oninput="renderStore()">
+      <select id="store-sys" onchange="renderStore()">
+        <option value="">ALL SYSTEMS</option>
+        <option value="segaMD">SEGA MEGA DRIVE</option>
+        <option value="nes">NES</option>
+        <option value="snes">SUPER NINTENDO</option>
+        <option value="gb">GAME BOY</option>
+        <option value="gba">GAME BOY ADVANCE</option>
+        <option value="n64">NINTENDO 64</option>
+        <option value="nds">NINTENDO DS</option>
+        <option value="psx">PLAYSTATION</option>
+        <option value="psp">PSP</option>
+        <option value="segaMS">MASTER SYSTEM</option>
+        <option value="segaGG">GAME GEAR</option>
+        <option value="arcade">ARCADE</option>
+      </select>
+    </div>
+    <div id="store-grid">
+      <div class="empty-state">
+        <div class="empty-ico">🛒</div>
+        <div class="empty-txt">ENTER YOUR GITHUB USERNAME\nAND REPO NAME ABOVE\nTHEN PRESS LOAD</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LIBRARY TAB ── -->
+  <div id="tab-library" style="display:none">
     <div class="filter-row">
       <input id="lib-search" type="text" placeholder="SEARCH LIBRARY..." autocomplete="off" spellcheck="false" oninput="renderLibrary()">
       <select id="lib-sys" onchange="renderLibrary()">
@@ -157,27 +223,25 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
     <div id="lib-grid"></div>
   </div>
 
-  <!-- UPLOAD TAB -->
-  <div id="tab-upload">
-    <span class="section-label">► ADD ROMS TO SERVER LIBRARY</span>
+  <!-- ── UPLOAD TAB ── -->
+  <div id="tab-upload" style="display:none">
+    <span class="section-label">► UPLOAD ROM FILES TO SERVER</span>
     <div class="upload-area" id="upload-area">
       <input type="file" id="file-input" multiple accept=".nes,.fds,.smc,.sfc,.gb,.gbc,.gba,.z64,.n64,.v64,.nds,.gen,.md,.smd,.bin,.sms,.gg,.32x,.pbp,.chd,.cue,.iso,.cso,.a26,.lnx,.pce,.ngp,.ws,.zip,.jar,.col,.vb,.d64,.adf">
       <div class="ua-icon">📁</div>
       <div class="ua-title">DROP ROM FILES HERE</div>
-      <div class="ua-sub">Or click to browse files<br>Supports NES, SNES, GB, GBA, N64, MD, PSX, PSP and more<br>Files upload directly to the server library</div>
+      <div class="ua-sub">Or click to browse · NES, SNES, GB, GBA, N64, MD, PSX, PSP and more</div>
     </div>
     <div id="upload-queue"></div>
   </div>
-
 </div>
 
 <div id="status-bar">
   <div class="sb-txt" id="sb-txt">READY</div>
-  <div class="sb-count" id="sb-count"></div>
 </div>
 
 <script>
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────
 const EXT_CORE = {
   '.nes':'nes','.fds':'nes','.smc':'snes','.sfc':'snes','.fig':'snes',
   '.gb':'gb','.gbc':'gb','.gba':'gba','.z64':'n64','.n64':'n64','.v64':'n64',
@@ -200,20 +264,195 @@ const SYS_CLS = {
   segaMD:'sys-segaMD',segaMS:'sys-segaMD',segaGG:'sys-segaMD',sega32x:'sys-segaMD',
   psx:'sys-psx',psp:'sys-psp',arcade:'sys-arcade',
 };
-function getCore(filename) { return EXT_CORE[filename.slice(filename.lastIndexOf('.')).toLowerCase()]||null; }
-function fmtSize(b){ if(!b)return'?'; if(b>1e9)return(b/1e9).toFixed(1)+'GB'; if(b>1e6)return(b/1e6).toFixed(1)+'MB'; return(b/1e3).toFixed(0)+'KB'; }
-function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function getCore(fn){ const e=fn.slice(fn.lastIndexOf('.')).toLowerCase(); return EXT_CORE[e]||null; }
+function fmtSize(b){ if(!b)return''; if(b>1e9)return(b/1e9).toFixed(1)+' GB'; if(b>1e6)return(b/1e6).toFixed(1)+' MB'; return(b/1e3).toFixed(0)+' KB'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setStatus(msg,err=false,ok=false){ const el=document.getElementById('sb-txt'); el.textContent=msg; el.className='sb-txt'+(err?' err':ok?' ok':''); }
 
 // ── State ──────────────────────────────────────────────────────────────────
-let allGames = [];
+let allGames = [];      // server library
+let storeGames = [];    // github store
+const downloading = new Set(); // filenames currently downloading to server
 
-// ── Load library ───────────────────────────────────────────────────────────
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  ['store','library','upload'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===name ? 'block' : 'none';
+    document.getElementById('tab-btn-'+t).classList.toggle('active', t===name);
+  });
+  if(name==='library') loadLibrary();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STORE — GitHub Releases
+// ═══════════════════════════════════════════════════════════════════════════
+const GH_LS_KEY = 'rh_gh_config';
+
+async function loadStore() {
+  const user = document.getElementById('gh-user').value.trim();
+  const repo = document.getElementById('gh-repo').value.trim();
+  if (!user || !repo) { setStatus('ENTER GITHUB USERNAME AND REPO NAME', true); return; }
+
+  // Save config
+  localStorage.setItem(GH_LS_KEY, JSON.stringify({user, repo}));
+
+  const grid = document.getElementById('store-grid');
+  grid.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  setStatus('LOADING FROM GITHUB...');
+
+  try {
+    // Fetch all releases
+    const res = await fetch(`https://api.github.com/repos/${user}/${repo}/releases`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error(`GitHub API error: ${res.status} — check username and repo name`);
+    const releases = await res.json();
+    if (!releases.length) throw new Error('No releases found in this repo. Upload ROMs as release assets on GitHub.');
+
+    // Flatten all assets across all releases
+    storeGames = [];
+    for (const release of releases) {
+      for (const asset of (release.assets || [])) {
+        const core = getCore(asset.name);
+        if (!core) continue; // skip non-ROM files
+        const name = asset.name
+          .replace(/\.[^.]+$/, '')
+          .replace(/[\(\[][^\)\]]*[\)\]]/g, '')  // strip (USA) [!] etc
+          .replace(/[_\-]/g, ' ')
+          .trim();
+        storeGames.push({
+          name,
+          filename: asset.name,
+          core,
+          size: asset.size,
+          url: asset.browser_download_url,
+          release: release.tag_name,
+        });
+      }
+    }
+
+    storeGames.sort((a,b) => a.name.localeCompare(b.name));
+    renderStore();
+    setStatus(`LOADED ${storeGames.length} GAMES FROM ${user}/${repo}`, false, true);
+  } catch(e) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-ico">⚠️</div><div class="empty-txt">${esc(e.message)}</div></div>`;
+    setStatus(e.message, true);
+  }
+}
+
+function renderStore() {
+  const q   = document.getElementById('store-search').value.toLowerCase();
+  const sys = document.getElementById('store-sys').value;
+  const grid = document.getElementById('store-grid');
+
+  const filtered = storeGames.filter(g =>
+    (!q || g.name.toLowerCase().includes(q)) &&
+    (!sys || g.core === sys)
+  );
+
+  if (!filtered.length) {
+    grid.innerHTML = storeGames.length
+      ? '<div class="empty-state"><div class="empty-ico">🔍</div><div class="empty-txt">NO GAMES MATCH FILTER</div></div>'
+      : '<div class="empty-state"><div class="empty-ico">🛒</div><div class="empty-txt">ENTER GITHUB DETAILS\nAND PRESS LOAD</div></div>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  const serverFiles = new Set(allGames.map(g => g.filename));
+
+  filtered.forEach(g => {
+    const cls = SYS_CLS[g.core] || 'sys-default';
+    const lbl = SYS_LABEL[g.core] || g.core;
+    const onServer = serverFiles.has(g.filename);
+    const isDownloading = downloading.has(g.filename);
+
+    const card = document.createElement('div');
+    card.className = 'sc-card';
+    card.id = 'sc_' + g.filename.replace(/\W/g,'_');
+    card.innerHTML = `
+      <span class="sc-sys ${cls}">${lbl}</span>
+      <div class="sc-name">${esc(g.name)}</div>
+      <div class="sc-size">${fmtSize(g.size)}</div>
+      <div class="sc-btns">
+        <button class="sc-add ${onServer?'done':''}"
+          id="add_${esc(g.filename.replace(/\W/g,'_'))}"
+          ${onServer||isDownloading?'disabled':''}
+          onclick="addToServer(${JSON.stringify(g).replace(/"/g,'&quot;')},this)">
+          ${onServer ? '✓ ON SERVER' : isDownloading ? '⟳ ADDING...' : '+ ADD TO SERVER'}
+        </button>
+        <a class="sc-dl" href="${esc(g.url)}" download="${esc(g.filename)}" title="Download to your device">⬇</a>
+      </div>
+      <div class="sc-progress" id="prog_${esc(g.filename.replace(/\W/g,'_'))}"></div>`;
+    grid.appendChild(card);
+  });
+}
+
+// Download from GitHub → server library
+async function addToServer(game, btn) {
+  if (downloading.has(game.filename)) return;
+  downloading.add(game.filename);
+  btn.disabled = true;
+  btn.textContent = '⟳ ADDING...';
+
+  const progId = 'prog_' + game.filename.replace(/\W/g,'_');
+  const progEl = document.getElementById(progId);
+
+  setStatus('ADDING ' + game.name.toUpperCase() + ' TO SERVER...');
+
+  try {
+    // Stream download from GitHub URL → server via our proxy endpoint
+    const res = await fetch('/api/shop/download-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: game.url, filename: game.filename }),
+    });
+
+    if (!res.ok) throw new Error('Server error: ' + res.status);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const msg = JSON.parse(line);
+          if (msg.progress !== undefined && progEl) progEl.style.width = msg.progress + '%';
+          if (msg.done) {
+            btn.textContent = '✓ ON SERVER';
+            btn.classList.add('done');
+            if (progEl) progEl.style.width = '100%';
+            setStatus(game.name.toUpperCase() + ' ADDED TO SERVER', false, true);
+            await loadLibrary();
+          }
+          if (msg.error) throw new Error(msg.error);
+        } catch(_) {}
+      }
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '+ ADD TO SERVER';
+    setStatus('FAILED: ' + e.message, true);
+  } finally {
+    downloading.delete(game.filename);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIBRARY — server games
+// ═══════════════════════════════════════════════════════════════════════════
 async function loadLibrary() {
   try {
     const r = await fetch('/api/games');
     allGames = await r.json();
     renderLibrary();
-    document.getElementById('lib-count').textContent = allGames.length + ' GAMES';
+    document.getElementById('lib-count').textContent = allGames.length + ' GAMES ON SERVER';
   } catch(e) {
     setStatus('FAILED TO LOAD LIBRARY', true);
   }
@@ -227,152 +466,113 @@ function renderLibrary() {
     (!q || g.name.toLowerCase().includes(q)) &&
     (!sys || g.core === sys)
   );
-
-  document.getElementById('lib-count').textContent = filtered.length + ' / ' + allGames.length + ' GAMES';
-
   if (!filtered.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-ico">🎮</div><div class="empty-txt">${allGames.length ? 'NO GAMES MATCH FILTER' : 'LIBRARY IS EMPTY\nUPLOAD ROMS TO GET STARTED'}</div></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-ico">🎮</div><div class="empty-txt">${allGames.length ? 'NO GAMES MATCH FILTER' : 'LIBRARY IS EMPTY\nADD GAMES FROM THE STORE TAB\nOR UPLOAD YOUR OWN'}</div></div>`;
     return;
   }
-
   grid.innerHTML = '';
   filtered.forEach(g => {
-    const core = g.core;
-    const cls  = SYS_CLS[core] || 'sys-default';
-    const lbl  = SYS_LABEL[core] || core;
+    const cls = SYS_CLS[g.core] || 'sys-default';
+    const lbl = SYS_LABEL[g.core] || g.core;
     const card = document.createElement('div');
     card.className = 'lib-card';
     card.innerHTML = `
       <span class="lc-sys ${cls}">${lbl}</span>
       <div class="lc-name">${esc(g.name)}</div>
+      <div class="lc-size">${fmtSize(g.size)}</div>
       <div class="lc-btns">
-        <button class="lc-dl" onclick="downloadGame('${esc(g.filename)}','${esc(g.name)}')">⬇ DOWNLOAD</button>
+        <button class="lc-dl" onclick="downloadToDevice('${esc(g.filename)}','${esc(g.name)}')">⬇ DOWNLOAD</button>
         <button class="lc-del" onclick="deleteGame('${esc(g.filename)}','${esc(g.name)}',this)">🗑</button>
       </div>`;
     grid.appendChild(card);
   });
 }
 
-// ── Download game to user's device ────────────────────────────────────────
-function downloadGame(filename, name) {
-  // Create a temporary anchor and trigger browser download
+function downloadToDevice(filename, name) {
   const a = document.createElement('a');
   a.href = '/games/' + encodeURIComponent(filename);
   a.download = filename;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setStatus('DOWNLOADING ' + name.toUpperCase() + ' TO YOUR DEVICE...', false, true);
   setTimeout(() => setStatus('READY'), 3000);
 }
 
-// ── Delete game from server ────────────────────────────────────────────────
 async function deleteGame(filename, name, btn) {
-  if (!confirm(`Delete "${name}" from the server library?\nThis cannot be undone.`)) return;
+  if (!confirm(`Delete "${name}" from server?\nThis cannot be undone.`)) return;
   btn.disabled = true;
   try {
     const r = await fetch('/api/games/delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename }),
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({filename}),
     });
     if (!r.ok) throw new Error('Delete failed');
     allGames = allGames.filter(g => g.filename !== filename);
     renderLibrary();
-    setStatus(name.toUpperCase() + ' DELETED FROM LIBRARY', false, true);
+    setStatus(name.toUpperCase() + ' DELETED', false, true);
   } catch(e) {
     btn.disabled = false;
     setStatus('DELETE FAILED: ' + e.message, true);
   }
 }
 
-// ── Status bar ─────────────────────────────────────────────────────────────
-function setStatus(msg, err=false, ok=false) {
-  const el = document.getElementById('sb-txt');
-  el.textContent = msg;
-  el.className = 'sb-txt' + (err?' err':ok?' ok':'');
-}
-
-// ── Tabs ───────────────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.getElementById('tab-library').style.display = name==='library' ? 'block' : 'none';
-  document.getElementById('tab-upload').style.display  = name==='upload'  ? 'block' : 'none';
-  document.getElementById('tab-btn-library').classList.toggle('active', name==='library');
-  document.getElementById('tab-btn-upload').classList.toggle('active', name==='upload');
-}
-
-// ── Upload ROMs to server ──────────────────────────────────────────────────
-const fileInput = document.getElementById('file-input');
+// ═══════════════════════════════════════════════════════════════════════════
+// UPLOAD — drag-drop to server
+// ═══════════════════════════════════════════════════════════════════════════
 const uploadArea = document.getElementById('upload-area');
+const fileInput  = document.getElementById('file-input');
 const uploadQueue = document.getElementById('upload-queue');
 
 uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag'); });
 uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag'));
-uploadArea.addEventListener('drop', e => {
-  e.preventDefault(); uploadArea.classList.remove('drag');
-  handleFiles([...e.dataTransfer.files]);
-});
+uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('drag'); handleFiles([...e.dataTransfer.files]); });
 fileInput.addEventListener('change', () => { handleFiles([...fileInput.files]); fileInput.value=''; });
 
 function handleFiles(files) {
-  const valid = files.filter(f => {
-    const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
-    return EXT_CORE[ext];
-  });
+  const valid = files.filter(f => getCore(f.name));
   if (!valid.length) { setStatus('NO SUPPORTED ROM FILES FOUND', true); return; }
-  valid.forEach(f => uploadFile(f));
+  valid.forEach(uploadFile);
 }
 
 async function uploadFile(file) {
+  const safeId = file.name.replace(/\W/g,'_');
   const item = document.createElement('div');
   item.className = 'uq-item';
-  item.innerHTML = `
-    <div class="uq-name">${esc(file.name)}</div>
-    <div class="uq-size">${fmtSize(file.size)}</div>
-    <div class="uq-bar-wrap"><div class="uq-bar" id="bar_${file.name.replace(/\W/g,'_')}"></div></div>
-    <div class="uq-status running" id="st_${file.name.replace(/\W/g,'_')}">UPLOADING</div>`;
+  item.innerHTML = `<div class="uq-name">${esc(file.name)}</div><div class="uq-size">${fmtSize(file.size)}</div>
+    <div class="uq-bar-wrap"><div class="uq-bar" id="bar_${safeId}"></div></div>
+    <div class="uq-status running" id="st_${safeId}">UPLOADING</div>`;
   uploadQueue.insertBefore(item, uploadQueue.firstChild);
-
-  const barId = 'bar_' + file.name.replace(/\W/g,'_');
-  const stId  = 'st_'  + file.name.replace(/\W/g,'_');
-
   try {
-    const xhr = new XMLHttpRequest();
     await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
       xhr.upload.addEventListener('progress', e => {
-        if (e.lengthComputable) {
-          const pct = Math.round((e.loaded/e.total)*100);
-          const bar = document.getElementById(barId);
-          if (bar) bar.style.width = pct + '%';
-        }
+        if (e.lengthComputable) { const p=Math.round(e.loaded/e.total*100); const b=document.getElementById('bar_'+safeId); if(b)b.style.width=p+'%'; }
       });
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) resolve();
-        else reject(new Error('HTTP ' + xhr.status));
-      });
+      xhr.addEventListener('load', () => xhr.status===200 ? resolve() : reject(new Error('HTTP '+xhr.status)));
       xhr.addEventListener('error', () => reject(new Error('Network error')));
-      const fd = new FormData();
-      fd.append('rom', file, file.name);
-      xhr.open('POST', '/api/upload');
-      xhr.send(fd);
+      const fd = new FormData(); fd.append('rom', file, file.name);
+      xhr.open('POST', '/api/upload'); xhr.send(fd);
     });
-
-    const stEl = document.getElementById(stId);
-    const barEl = document.getElementById(barId);
-    if (stEl) { stEl.textContent='DONE'; stEl.className='uq-status ok'; }
-    if (barEl) barEl.style.width='100%';
+    const st=document.getElementById('st_'+safeId); if(st){st.textContent='DONE';st.className='uq-status ok';}
+    const b=document.getElementById('bar_'+safeId); if(b)b.style.width='100%';
     setStatus(file.name + ' UPLOADED', false, true);
-    // Refresh library
     await loadLibrary();
   } catch(e) {
-    const stEl = document.getElementById(stId);
-    if (stEl) { stEl.textContent='FAILED'; stEl.className='uq-status err'; }
+    const st=document.getElementById('st_'+safeId); if(st){st.textContent='FAILED';st.className='uq-status err';}
     setStatus('UPLOAD FAILED: ' + e.message, true);
   }
 }
 
-loadLibrary();
+// ── Init ───────────────────────────────────────────────────────────────────
+(function init() {
+  // Restore saved GitHub config
+  try {
+    const cfg = JSON.parse(localStorage.getItem(GH_LS_KEY) || '{}');
+    if (cfg.user) document.getElementById('gh-user').value = cfg.user;
+    if (cfg.repo) document.getElementById('gh-repo').value = cfg.repo;
+    if (cfg.user && cfg.repo) loadStore(); // auto-load if config exists
+  } catch(_) {}
+  loadLibrary();
+})();
 </script>
 </body>
 </html>

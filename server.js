@@ -255,6 +255,65 @@ app.post('/api/shop/download', express.json(), async (req, res) => {
   }
 });
 
+// ── Download from any URL → server library (used by GitHub store) ────────────
+app.post('/api/shop/download-url', express.json(), async (req, res) => {
+  const { url, filename } = req.body || {};
+  if (!url || !filename) return res.status(400).json({ error: 'Missing params' });
+  const safeName = path.basename(filename).replace(/[^a-zA-Z0-9._\-\(\)\[\] ]/g, '_');
+  const ext = path.extname(safeName).toLowerCase();
+  if (!EXT_CORE[ext]) return res.status(400).json({ error: 'Unsupported file type' });
+  const destPath = path.join(__dirname, 'public', 'games', safeName);
+
+  // Already exists — just say done
+  if (fs.existsSync(destPath)) {
+    res.setHeader('Content-Type', 'application/json');
+    res.write(JSON.stringify({ progress: 100, done: true, filename: safeName }) + '\n');
+    return res.end();
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Transfer-Encoding', 'chunked');
+  res.setHeader('X-Accel-Buffering', 'no');
+  const tmpPath = destPath + '.tmp';
+
+  try {
+    await new Promise((resolve, reject) => {
+      const doGet = (getUrl) => {
+        const mod = getUrl.startsWith('https') ? require('https') : require('http');
+        mod.get(getUrl, { headers: { 'User-Agent': 'RetroHub/1.0' } }, dlRes => {
+          if (dlRes.statusCode >= 300 && dlRes.statusCode < 400 && dlRes.headers.location) {
+            dlRes.resume(); return doGet(dlRes.headers.location);
+          }
+          if (dlRes.statusCode !== 200) { dlRes.resume(); return reject(new Error('HTTP ' + dlRes.statusCode)); }
+          const total = parseInt(dlRes.headers['content-length']) || 0;
+          let received = 0, lastPct = -1;
+          const out = fs.createWriteStream(tmpPath);
+          dlRes.on('data', chunk => {
+            received += chunk.length;
+            if (total > 0) {
+              const pct = Math.floor((received / total) * 100);
+              if (pct !== lastPct) { lastPct = pct; res.write(JSON.stringify({ progress: pct }) + '\n'); }
+            }
+          });
+          dlRes.pipe(out);
+          out.on('finish', () => {
+            fs.renameSync(tmpPath, destPath);
+            res.write(JSON.stringify({ done: true, filename: safeName }) + '\n');
+            resolve();
+          });
+          out.on('error', reject); dlRes.on('error', reject);
+        }).on('error', reject);
+      };
+      doGet(url);
+    });
+    res.end();
+  } catch(e) {
+    console.error('[download-url]', e.message);
+    try { fs.unlinkSync(tmpPath); } catch(_) {}
+    if (!res.writableEnded) { res.write(JSON.stringify({ error: e.message }) + '\n'); res.end(); }
+  }
+});
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // ROOMS — full state machine with session recovery
 //
