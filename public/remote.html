@@ -457,6 +457,27 @@ function dpad(cx,cy,s,gap=10){
     {id:'dp_d',label:'▼',key:'ArrowDown',code:'ArrowDown',type:'dp',x:cx,      y:cy+h+gap,w,h},
   ];
 }
+function applySelectionContext(data) {
+  if (!data) return;
+  const game = data.game || data;
+  currentGame = game;
+
+  if (!game) return;
+  document.getElementById('gc-name').textContent = game.name || '';
+  document.getElementById('gc-sys').textContent  = SYSINFO[game.core] || game.core || '';
+  document.getElementById('gc-icon').textContent = SYSICONS[game.core] || '🎮';
+
+  // Toggle Contextual Buttons if Shop Page is driving the UI
+  if (data.isShop) {
+    document.getElementById('btn-play').innerHTML = '⬇ &nbsp;Download';
+    document.getElementById('btn-shop').innerHTML = '◀ &nbsp;Back to Lib';
+    currentGame._isShop = true;
+  } else {
+    document.getElementById('btn-play').innerHTML = '▶ &nbsp;Start Game';
+    document.getElementById('btn-shop').innerHTML = '🛒 &nbsp;Game Shop';
+    currentGame._isShop = false;
+  }
+}
 function face(cx,cy,r,btns){
   const offsets=[[0,-r],[-r,0],[r,0],[0,r]];
   return btns.map((b,i)=>({...b,type:'face',x:cx+offsets[i][0],y:cy+offsets[i][1]}));
@@ -1104,13 +1125,11 @@ socket.on('disconnect',()=>{
 
 socket.on('room:joined',({playerId:pid,roomCode:rc,reconnected,state})=>{
   isReconnecting=false;
-  // Dismiss the tap-to-start overlay if still showing — user already interacted
   if(!fsGranted) dismissTapStart();
   playerId=pid; roomCode=rc;
   saveSession(rc,pid);
   const cls=pid===2?'p2':'p1';
-  document.getElementById('nav-rc').textContent=rc;
-  ['nav-pill','pad-pill'].forEach(id=>{
+  document.getElementById('nav-rc').textContent=rc;['nav-pill','pad-pill'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.textContent=`P${pid}`;el.className=`pill ${cls}`;}
   });
@@ -1118,19 +1137,11 @@ socket.on('room:joined',({playerId:pid,roomCode:rc,reconnected,state})=>{
   else toast(`REJOINED ROOM ${rc}`);
   vib([28,12,28]);
 
-  // Restore state if rejoining mid-session
   if(state){
     if(state.lastSelection){
-      const _ls=state.lastSelection;
-      currentGame=(_ls&&_ls.game)?_ls.game:_ls;
-      if(currentGame){
-        document.getElementById('gc-name').textContent=currentGame.name||'';
-        document.getElementById('gc-sys').textContent=SYSINFO[currentGame.core]||currentGame.core||'';
-        document.getElementById('gc-icon').textContent=SYSICONS[currentGame.core]||'🎮';
-      }
+      applySelectionContext(state.lastSelection);
     }
-    if(state.gameActive&&currentGame){
-      // Rejoin mid-game → go straight to pad
+    if(state.gameActive&&currentGame&&!currentGame._isShop){
       document.getElementById('pad-name').textContent=currentGame.name||'';
       show('v-pad');
       requestAnimationFrame(()=>buildPad(currentGame.core));
@@ -1181,13 +1192,8 @@ socket.on('session:ended',({reason})=>{
 });
 
 // ── Game selection ─────────────────────────────────────────────────────────
-socket.on('hub:selection',(data)=>{
-  // TV sends {game:{...}}
-  const game = data.game || data;
-  currentGame=game; if(!game) return;
-  document.getElementById('gc-name').textContent=game.name||'';
-  document.getElementById('gc-sys').textContent=SYSINFO[game.core]||game.core||'';
-  document.getElementById('gc-icon').textContent=SYSICONS[game.core]||'🎮';
+socket.on('hub:selection', (data) => {
+  applySelectionContext(data);
 });
 
 // ── Game started ───────────────────────────────────────────────────────────
@@ -1218,16 +1224,27 @@ document.getElementById('btn-join').addEventListener('click',()=>{
   const code=document.getElementById('code-in').value.trim().toUpperCase();
   document.getElementById('jerr').textContent='';
   if(code.length<2){document.getElementById('jerr').textContent='Enter room code';return;}
-  dismissTapStart(); // dismiss overlay before transitioning
+  dismissTapStart();
   socket.emit('controller:join',{roomCode:code});vib(18);
 });
 document.getElementById('code-in').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btn-join').click();});
 document.getElementById('btn-prev').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib(20);socket.emit('nav:prev');});
 document.getElementById('btn-next').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib(20);socket.emit('nav:next');});
-document.getElementById('btn-shop').addEventListener('pointerdown',e=>{if(playerId!==1)return;e.preventDefault();vib([20,10,20]);socket.emit('open:shop');toast('OPENING SHOP ON TV');});
+document.getElementById('btn-shop').addEventListener('pointerdown',e=>{
+  if(playerId!==1)return;e.preventDefault();vib([20,10,20]);
+  socket.emit('open:shop'); 
+});
 document.getElementById('btn-play').addEventListener('pointerdown',e=>{
-  if(playerId!==1)return;e.preventDefault();vib([32,12,32]);socket.emit('nav:start',{});
-  if(currentGame){document.getElementById('pad-name').textContent=currentGame.name;show('v-pad');requestAnimationFrame(()=>buildPad(currentGame.core));}
+  if(playerId!==1)return;e.preventDefault();vib([32,12,32]);
+  
+  socket.emit('nav:start',{}); // Send trigger event to TV
+
+  // ONLY switch to gamepad view if we aren't in shop download mode
+  if(currentGame && !currentGame._isShop){
+    document.getElementById('pad-name').textContent=currentGame.name;
+    show('v-pad');
+    requestAnimationFrame(()=>buildPad(currentGame.core));
+  }
 });
 // btn-back: first tap shows confirm text, second tap within 2s stops game
 let _backTaps=0, _backTimer=null;
